@@ -45,3 +45,7 @@ ol.steps{padding-left:1.4em}ol.steps li{margin:.3em 0}
 .toc a{display:block;padding:3px 0}
 .toc .mod{font-family:-apple-system,Helvetica,sans-serif;font-weight:700;margin-top:1.2em}
 .nowrap{white-space:nowrap}
+/* mobile */
+table{display:block;overflow-x:auto;max-width:100%}
+img,svg{max-width:100%;height:auto}
+@media(max-width:600px){body{font-size:16px}main{padding:16px 14px 60px}h1{font-size:1.5rem}.nav{flex-wrap:wrap;gap:6px}th,td{padding:4px 6px}pre{font-size:.78rem}}
