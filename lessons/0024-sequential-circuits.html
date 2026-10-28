@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>24 · Sequential Circuits</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0023-combinational-circuits.html">← Combinational</a><a href="0025-number-systems.html">Next: Number Systems →</a></nav>
+<h1>24 · Sequential Circuits: Flip-Flops, Registers, Counters</h1>
+<p class="sub"><span class="tag">Module G · Digital logic</span><span class="tag">Asked in 2023 and 2025</span> Circuits with memory.</p>
+
+<h2>Start here</h2>
+<p>A <b>sequential circuit</b> has outputs that depend on both the present inputs <i>and</i> the stored past (its state). The basic memory element holds one bit. Two flavours: a <b>latch</b> responds the whole time its enable (clock) is active (<b>level-sensitive</b>), while a <b>flip-flop</b> changes only at the instant the clock changes (<b>edge-triggered</b>). A <b>clock</b> is a regular 0/1 square wave that tells everything when to update.</p>
+
+<h2>The basic memory elements</h2>
+<table><tr><th>Type</th><th>Inputs</th><th>Behaviour (next state Q⁺)</th></tr>
+<tr><td><b>SR</b></td><td>S, R</td><td>S=0,R=0: hold · S=1,R=0: set Q=1 · S=0,R=1: reset Q=0 · S=1,R=1: <b>forbidden</b></td></tr>
+<tr><td><b>D</b></td><td>D</td><td>Q⁺ = D (copies D; stores one bit)</td></tr>
+<tr><td><b>JK</b></td><td>J, K</td><td>00: hold · 01: reset · 10: set · 11: <b>toggle</b> (flip Q)</td></tr>
+<tr><td><b>T</b></td><td>T</td><td>T=0: hold · T=1: toggle</td></tr></table>
+<div class="box"><p><b>Gated D latch</b> (a D latch with an enable/clock input): while the clock is <b>HIGH</b> the output follows D ("transparent"); when the clock goes <b>LOW</b> the latch holds (stores) the last value. So the statement "when the clock is low, the input passes through to the output" is false.</p></div>
+
+<h2>Registers and shift registers</h2>
+<p>A <b>register</b> is a group of flip-flops storing a multi-bit word. In a <b>shift register</b> the output of each flip-flop feeds the next, so on each clock pulse the bits move one place. A bit entering an <b>n-bit serial register</b> needs n clock periods to come out the other end, so the delay is <b>n × clock period</b>.</p>
+<div class="ex"><div class="label">Worked example (2023 question)</div>
+<p>8-bit serial register, clock 400 MHz. Clock period = 1 ÷ 400 MHz = 2.5 ns. Delay = 8 × 2.5 ns = <b>20 ns</b>.</p></div>
+
+<h2>Counters</h2>
+<p>A <b>counter</b> steps through a sequence of states on each clock pulse. A <b>MOD-N counter</b> has N states (a MOD-16 counter counts 0000 to 1111, then wraps to 0000). A 4-bit binary counter is MOD-16 (2⁴).</p>
+<ul><li><b>Asynchronous (ripple) counter</b>: the clock drives only the first flip-flop; each later flip-flop is clocked by the output of the one before it. Simple, but delays add up ("ripples").</li>
+<li><b>Synchronous counter</b>: all flip-flops share the same clock, so it is faster.</li>
+<li>Up counter counts up; down counter counts down; MOD-N is built by resetting at N.</li></ul>
+<div class="ex"><div class="label">Worked example (2025 question): pulses to reach 0000</div>
+<p>A MOD-16 up-counter is at 1001 (decimal 9). Each pulse adds 1: 10, 11, 12, 13, 14, 15, then the next pulse wraps to 0. Pulses needed = 16 − 9 = <b>7</b>.</p></div>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q53</div>
+<p class="q">A MOD-16 ripple counter using J-K flip-flops has a current state 1001. How many clock pulses are required to get the state 0000?</p>
+<button class="opt">8</button><button class="opt">6</button><button class="opt">7</button><button class="opt">5</button>
+<div class="why" hidden>Counting up from 9: 10, 11, 12, 13, 14, 15, 0 → 7 pulses.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q54</div>
+<p class="q">Which of the following options is NOT true for a gated D-type flip-flop?</p>
+<button class="opt">when clock is high, allows the input data (D) to pass through to the output (Q)</button><button class="opt">stores a single bit of data</button><button class="opt">uses a clock signal to control when the input data (D) is transferred to the output (Q)</button><button class="opt">when clock is low, allows the input data (D) to pass through to the output (Q)</button>
+<div class="why" hidden>When the clock is low it holds, it does not pass data through.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q36</div>
+<p class="q">The time delay obtained through an 8 bit serial register with a 400 MHz clock is</p>
+<button class="opt">20 ns</button><button class="opt">2.5 µs</button><button class="opt">20 µs</button><button class="opt">2.5 ns</button>
+<div class="why" hidden>8 × 2.5 ns = 20 ns.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">Practice (written by me)</div>
+<p class="q">A JK flip-flop has J = 1, K = 1 at the clock edge. The output Q</p>
+<button class="opt">Stays the same</button><button class="opt">Becomes 0</button><button class="opt">Toggles</button><button class="opt">Is undefined</button>
+<div class="why" hidden>JK with 11 toggles (unlike SR, where 11 is forbidden).</div></div>
+
+<div class="foot">Primary source: Morris Mano, <i>Digital Design</i>, chapters 5–6. <a href="0025-number-systems.html">Next: Number Systems →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

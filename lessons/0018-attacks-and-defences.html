@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>18 · Attacks and Defences</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0017-cryptography.html">← Cryptography</a><a href="0019-relational-model-and-sql.html">Next: Relational Model and SQL →</a></nav>
+<h1>18 · Attacks, Firewalls &amp; Secure Protocols</h1>
+<p class="sub"><span class="tag">Module E · Security</span><span class="tag">Asked in 2023 and 2025</span> Common attack names, what firewalls do and don't do, IPSec and TLS.</p>
+
+<h2>Start here</h2>
+<p>These questions are mostly vocabulary: match a name to what it is. Learn each term with one sentence and one hook. Group them by what they target.</p>
+
+<h2>Attacks</h2>
+<table><tr><th>Name</th><th>What it is</th><th>Hook</th></tr>
+<tr><td><b>Phishing</b></td><td>Fake emails/sites that trick a user into <b>revealing personal data</b></td><td>Social engineering; targets people</td></tr>
+<tr><td><b>Eavesdropping / sniffing</b></td><td>Secretly listening to traffic</td><td>Passive; encryption defeats it</td></tr>
+<tr><td><b>SQL injection</b></td><td>Sending SQL code through an input box so the database runs it</td><td>Fix: input sanitisation, prepared statements</td></tr>
+<tr><td><b>Website defacement</b></td><td>Changing the content of a site</td><td></td></tr>
+<tr><td><b>Man-in-the-middle</b></td><td>Attacker silently relays and can alter traffic between two parties</td><td>Defence: TLS and certificates</td></tr>
+<tr><td><b>ARP spoofing</b></td><td>Sending false ARP replies to <b>poison the IP→MAC mapping</b></td><td>Enables man-in-the-middle on a LAN</td></tr>
+<tr><td><b>MAC cloning</b></td><td>Copying another device's MAC address (NIC identifier)</td><td>Manipulating a host's identification</td></tr>
+<tr><td><b>OS fingerprinting</b></td><td>Working out the OS name and version of a target from its responses</td><td>Reconnaissance</td></tr>
+<tr><td><b>Ping of death</b></td><td>An oversized ICMP echo packet that overflows a buffer</td><td>Cause: <b>buffer overflow</b></td></tr>
+<tr><td><b>DoS / DDoS</b></td><td>Flooding a service so legitimate users can't use it</td><td>Attacks availability</td></tr>
+<tr><td><b>Zero-day</b></td><td>Exploiting a flaw the vendor doesn't yet know about</td><td>No patch exists yet</td></tr>
+<tr><td><b>Privilege escalation</b></td><td>Gaining higher rights than allowed</td><td></td></tr>
+<tr><td><b>Dumpster diving, shoulder surfing</b></td><td>Searching discarded material / watching someone type</td><td>Physical/social; firewalls are useless</td></tr></table>
+<p><b>CAPTCHA</b> ("prove you're human") protects against <b>automated, scripted attacks</b> (bots), e.g. mass account creation or password guessing.</p>
+
+<h2>Firewalls</h2>
+<p>A <b>firewall</b> filters network traffic between a trusted and an untrusted network using rules. Types: <b>packet filter</b> (looks at addresses/ports of each packet), <b>stateful firewall</b> (also <b>tracks the state of TCP/IP connections</b>, so it can accept replies to connections you started), <b>application/proxy firewall</b> (understands application protocols).</p>
+<table><tr><th>Term</th><th>Meaning</th></tr>
+<tr><td><b>Ingress filtering</b></td><td>Filter traffic coming <i>in</i>: <b>malicious traffic prevention</b></td></tr>
+<tr><td><b>Egress filtering</b></td><td>Filter traffic going <i>out</i>: <b>data leakage prevention</b></td></tr>
+<tr><td><b>NAT</b></td><td>Translates private addresses to public ones: <b>hides the identity</b> of internal systems</td></tr>
+<tr><td><b>Stateful inspection</b></td><td>Tracks connection state</td></tr></table>
+<div class="box trap"><p>A firewall protects a <i>network</i> from <i>network</i> threats such as scanning and unwanted connections. It cannot stop dumpster diving, shoulder surfing or physical theft.</p></div>
+
+<h2>Secure protocols</h2>
+<ul><li><b>TLS/SSL</b>: encrypts traffic between a client and server. <b>HTTPS</b> = HTTP over TLS.</li>
+<li><b>SFTP</b> = file transfer over SSH (encrypted). <b>SNMPv3</b> adds authentication and encryption to SNMP.</li>
+<li><b>DNSSEC</b> adds digital signatures to DNS records so you can verify they are authentic and unaltered. It provides integrity and authenticity, <b>not encryption</b>; the data is still readable.</li>
+<li><b>IPSec</b> secures traffic at the IP layer. Two protocols and two modes:</li></ul>
+<table><tr><th></th><th>Transport mode</th><th>Tunnel mode</th></tr>
+<tr><td><b>AH</b> (Authentication Header): integrity and authentication, <b>no encryption</b></td><td>Protects the payload; original IP header stays visible</td><td>Authenticates the whole original packet inside a new outer IP header</td></tr>
+<tr><td><b>ESP</b> (Encapsulating Security Payload): <b>encryption</b> plus integrity</td><td>Encrypts only the payload; original IP addresses visible</td><td><b>Encrypts the entire original packet</b>, wrapped in a new IP header. Hides the private addresses. Used for site-to-site VPNs.</td></tr></table>
+<div class="ex"><div class="label">Worked example (2025 question)</div>
+<p>Requirements: two offices, full confidentiality and integrity, and the private IP addresses used inside must also be hidden. Confidentiality needs encryption, so ESP (AH doesn't encrypt). Hiding the inner IP addresses means wrapping the entire original packet, which is tunnel mode. Answer: <b>ESP in tunnel mode</b>.</p></div>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q36</div>
+<p class="q">A company wants to transmit data between its two offices with full confidentiality and integrity. Private IP addresses used by systems inside the company should also be confidential. Which IPSec configuration meets the requirements?</p>
+<button class="opt">IPSec using AH in Tunnel mode</button><button class="opt">IPSec using ESP in Transport mode</button><button class="opt">IPSec using ESP in Tunnel mode</button><button class="opt">IPSec using AH in Transport mode</button>
+<div class="why" hidden>ESP encrypts; tunnel mode hides the inner packet including private addresses.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q11</div>
+<p class="q">In which of the following cases is a user persuaded to reveal personal data by hackers/cyber criminals?</p>
+<button class="opt">Eavesdropping attack</button><button class="opt">SQL Injection attack</button><button class="opt">Phishing</button><button class="opt">Website Defacement</button>
+<div class="why" hidden>Phishing deceives the person into giving away data.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q12</div>
+<p class="q">Which of the following protocols/applications does not facilitate data encryption when data is sent over a computer network using that protocol/application?</p>
+<button class="opt">HTTPS</button><button class="opt">SNMPv3</button><button class="opt">DNS using DNSSEC</button><button class="opt">SFTP</button>
+<div class="why" hidden>DNSSEC only signs records.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q14</div>
+<p class="q">Which of the following can be protected using a firewall?</p>
+<button class="opt">Dumpster Diving</button><button class="opt">Physical Theft</button><button class="opt">Shoulder Surfing</button><button class="opt">Network Scanning</button>
+<div class="why" hidden>Only the network-based threat is blocked by a firewall.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q72</div>
+<p class="q">Match: (i) Encryption (ii) MAC Cloning (iii) ARP Spoofing (iv) Fingerprinting with (P) manipulation of identification of a host (through NIC identifier) (Q) determining version and name of OS and OS utilities (R) protecting the confidentiality (S) poisoning the IP to MAC address mapping.</p>
+<button class="opt">(i)-R, (ii)-P, (iii)-S, (iv)-Q</button><button class="opt">(i)-P, (ii)-R, (iii)-S, (iv)-Q</button><button class="opt">(i)-R, (ii)-S, (iii)-P, (iv)-Q</button><button class="opt">(i)-R, (ii)-Q, (iii)-S, (iv)-P</button>
+<div class="why" hidden>Encryption → confidentiality (R); MAC cloning → manipulating a host's identifier (P); ARP spoofing → poisoning IP-to-MAC mapping (S); fingerprinting → OS detection (Q).</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q73</div>
+<p class="q">Match: (i) Ingress filtering (ii) Egress filtering (iii) NAT (iv) Stateful firewall with (P) data leakage prevention (Q) hiding identity of systems (R) keep track of TCP/IP connections (S) malicious traffic prevention.</p>
+<button class="opt">(i)-S, (ii)-P, (iii)-Q, (iv)-R</button><button class="opt">(i)-P, (ii)-R, (iii)-S, (iv)-Q</button><button class="opt">(i)-S, (ii)-R, (iii)-P, (iv)-Q</button><button class="opt">(i)-R, (ii)-Q, (iii)-S, (iv)-P</button>
+<div class="why" hidden>Ingress → S; egress → P; NAT → Q; stateful → R.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q71</div>
+<p class="q">Which of the following is the cause of the Ping of Death issue related to ICMP packets?</p>
+<button class="opt">Buffer overflow</button><button class="opt">Divide by ZERO</button><button class="opt">Missing input sanitisation</button><button class="opt">Privilege escalation</button>
+<div class="why" hidden>An oversized packet overflows the receiver's buffer.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q75</div>
+<p class="q">CAPTCHA is used to provide protection from</p>
+<button class="opt">Zero day attack</button><button class="opt">Buffer overflow</button><button class="opt">Automated scripted attack</button><button class="opt">Man in the middle attack</button>
+<div class="why" hidden>It distinguishes humans from bots.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q10</div>
+<p class="q">Match (information security): (i) Non-repudiation (ii) Data Integrity (iii) Data Confidentiality (iv) Access Control with (P) protection from unauthorised disclosure (Q) prevention of unauthorised use of a resource (R) protection against denial by one of the entities involved in a communication (S) assurance that data arrived exactly as sent by an authorised entity.</p>
+<button class="opt">(i)-R, (ii)-P, (iii)-Q, (iv)-S</button><button class="opt">(i)-R, (ii)-S, (iii)-P, (iv)-Q</button><button class="opt">(i)-P, (ii)-R, (iii)-S, (iv)-Q</button><button class="opt">(i)-R, (ii)-Q, (iii)-P, (iv)-S</button>
+<div class="why" hidden>Non-repudiation → R; integrity → S; confidentiality → P; access control → Q.</div></div>
+
+<div class="foot">Primary source: Stallings, <i>Cryptography and Network Security</i>, parts on network security. <a href="0019-relational-model-and-sql.html">Next: Relational Model and SQL →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

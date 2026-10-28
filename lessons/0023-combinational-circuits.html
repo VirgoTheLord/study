@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>23 · Combinational Circuits</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0022-boolean-algebra-and-gates.html">← Boolean Algebra</a><a href="0024-sequential-circuits.html">Next: Sequential Circuits →</a></nav>
+<h1>23 · Combinational Circuits: Adders, Mux, Decoders</h1>
+<p class="sub"><span class="tag">Module G · Digital logic</span><span class="tag">Asked in 2023 and 2025</span> Circuits whose output depends only on the present inputs.</p>
+
+<h2>Start here</h2>
+<p>A <b>combinational circuit</b> has no memory: its outputs are a function of its current inputs only (a calculator's adder, for example). Contrast with <b>sequential</b> circuits (next lesson) which remember past values. A few standard building blocks cover almost every exam question.</p>
+
+<h2>Adders</h2>
+<p>Adding two bits: 0+0=0, 0+1=1, 1+1=<b>10</b> (sum 0, carry 1).</p>
+<table><tr><th>Circuit</th><th>Inputs</th><th>Outputs</th><th>Equations</th></tr>
+<tr><td><b>Half adder</b></td><td>A, B (2)</td><td>Sum, Carry (2)</td><td>Sum = A ⊕ B; Carry = A·B</td></tr>
+<tr><td><b>Full adder</b></td><td>A, B, <b>Carry-in</b> (3)</td><td>Sum, Carry-out (2)</td><td>Sum = A ⊕ B ⊕ Cin; Cout = AB + Cin(A ⊕ B)</td></tr></table>
+<p>A half adder can't accept a carry from a previous column, so to add multi-bit numbers you chain <b>full adders</b>: the carry-out of each feeds the carry-in of the next (a <b>ripple-carry adder</b>). The <b>full adder needs three inputs and gives two outputs</b>.</p>
+<div class="ex"><div class="label">Worked example: 1 + 1 + 1 (full adder)</div>
+<p>A = 1, B = 1, Cin = 1. Sum = 1⊕1⊕1 = 1. Carry-out = 1 (since 1+1+1 = 3 = binary 11).</p></div>
+
+<h2>Multiplexer and demultiplexer</h2>
+<p>A <b>multiplexer (mux)</b> chooses one of many inputs and sends it to the single output, like a railway switch. The <b>select lines</b> choose which. With n select lines you can choose among 2ⁿ inputs: a 4-to-1 mux has 2 select lines, an 8-to-1 mux has 3.</p>
+<p>A <b>demultiplexer (demux)</b> does the reverse: one input is routed to one of many outputs. A 1-to-16 demux needs <b>4</b> select lines (2⁴ = 16).</p>
+<figure><svg viewBox="0 0 480 140" width="480" role="img" aria-label="Mux and demux blocks">
+<g fill="none" stroke="currentColor" stroke-width="1.4"><path d="M30 20L130 40V100L30 120Z"/><path d="M290 40L390 20V120L290 100Z"/><path d="M0 40h30M0 60h30M0 80h30M0 100h30M130 70h30M80 120v14"/><path d="M390 40h30M390 60h30M390 80h30M390 100h30M260 70h30M340 100v34" /></g>
+<g text-anchor="middle"><text x="80" y="75">MUX</text><text x="340" y="75">DEMUX</text><text x="15" y="30">inputs</text><text x="190" y="64">1 out</text><text x="80" y="136">select</text><text x="255" y="64">1 in</text><text x="455" y="30">outputs</text><text x="340" y="136">select</text></g></svg></figure>
+
+<h2>Decoders and encoders</h2>
+<ul><li>A <b>decoder</b> turns an n-bit binary code into a 1-of-2ⁿ output: exactly one output line goes high. A 3-to-8 decoder has 3 inputs and 8 outputs. Used for address decoding.</li>
+<li>An <b>encoder</b> does the opposite: 2ⁿ input lines (one active) → n-bit code. An <b>octal-to-binary encoder</b> has 8 inputs and 3 outputs and needs <b>3 OR gates</b> (one per output bit), not 8.</li></ul>
+<div class="ex"><div class="label">Worked example: building a big decoder from small ones (2025 question)</div>
+<p>You want a 1-of-32 decoder (5 inputs) using 3-to-8 decoders (3 inputs, 8 outputs). 32 ÷ 8 = <b>4</b> decoders of 3-to-8 produce the 32 outputs. A fifth small component (a 2-to-4 decoder) uses the two extra input bits to enable exactly one of the four. The question asks only for the 3-to-8 ones: 4.</p></div>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q37</div>
+<p class="q">A full adder circuit requires</p>
+<button class="opt">two inputs and two outputs</button><button class="opt">two inputs and three outputs</button><button class="opt">three inputs and two outputs</button><button class="opt">three inputs and one output</button>
+<div class="why" hidden>Inputs A, B, Cin; outputs Sum and Cout. Two inputs and two outputs would be a half adder.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q35</div>
+<p class="q">Which of the following definitions is true? (i) A digital multiplexer takes one input from many inputs and outputs the selected one. (ii) Four select lines are required for a 1-16 demultiplexer. (iii) Eight OR gates are required to implement an octal to binary encoder.</p>
+<button class="opt">(i) and (ii)</button><button class="opt">(ii) and (iii)</button><button class="opt">(i) alone</button><button class="opt">None of the above</button>
+<div class="why" hidden>(i) true. (ii) true: 2⁴ = 16. (iii) false: an octal-to-binary encoder needs 3 OR gates (one per output bit).</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q50</div>
+<p class="q">How many 3 to 8 line decoders are required for a 1 of 32 decoder?</p>
+<button class="opt">1</button><button class="opt">2</button><button class="opt">4</button><button class="opt">8</button>
+<div class="why" hidden>32 outputs ÷ 8 outputs per decoder = 4.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">Practice (written by me)</div>
+<p class="q">How many select lines does an 8-to-1 multiplexer need?</p>
+<button class="opt">2</button><button class="opt">3</button><button class="opt">4</button><button class="opt">8</button>
+<div class="why" hidden>2³ = 8, so 3 select lines.</div></div>
+
+<div class="foot">Primary source: Morris Mano, <i>Digital Design</i>, chapter 4. <a href="0024-sequential-circuits.html">Next: Sequential Circuits →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>28 · Probability, Counting, Logic and Sets</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0027-linear-algebra-and-calculus.html">← Linear Algebra</a><a href="0029-ai-and-machine-learning.html">Next: AI and Machine Learning →</a></nav>
+<h1>28 · Probability, Counting, Logic &amp; Sets</h1>
+<p class="sub"><span class="tag">Module H · Maths</span><span class="tag">Asked in 2023 and 2025</span> The discrete-maths toolkit.</p>
+
+<h2>Probability</h2>
+<p><b>Probability</b> measures how likely an event is, from 0 (impossible) to 1 (certain). When all outcomes are equally likely: <b>P(E) = favourable outcomes ÷ total outcomes</b>.</p>
+<div class="ex"><div class="label">Worked example (2023)</div>
+<p>A bag has 6 blue, 5 white and 4 yellow balls (15 in all). P(not white) = non-white ÷ total = (6 + 4) ÷ 15 = 10/15 = <b>2/3</b>. Or use the complement rule: 1 − P(white) = 1 − 5/15 = 2/3.</p></div>
+<div class="box"><p><b>Rules</b><br>• Complement: P(not E) = 1 − P(E).<br>• Addition: P(A or B) = P(A) + P(B) − P(A and B). For mutually exclusive events the last term is 0.<br>• Independent events: P(A and B) = P(A) × P(B).<br>• Conditional: P(A | B) = P(A and B) ÷ P(B).<br>• Bayes: P(A | B) = P(B | A) × P(A) ÷ P(B).</p></div>
+
+<h3>Random variables and standard distributions</h3>
+<p>A <b>random variable</b> is a number produced by a random experiment (the number rolled on a die; the waiting time for a bus). A <b>discrete</b> random variable takes separate values (0, 1, 2, …) and is described by a probability <i>mass</i> function. A <b>continuous</b> one takes any value in a range and is described by a probability <i>density</i> function.</p>
+<table><tr><th>Discrete</th><th>Continuous</th></tr><tr><td><b>Bernoulli</b> (one yes/no trial)<br><b>Binomial</b> (number of successes in n trials)<br><b>Poisson</b> (number of events in a fixed interval, e.g. calls per hour)<br>Geometric (trials until first success)</td><td><b>Gaussian / normal</b> (bell curve)<br><b>Exponential</b> (waiting time between events)<br><b>Rayleigh</b> (e.g. signal amplitude)<br>Uniform (continuous)</td></tr></table>
+<p>So the standard distribution that applies to discrete random variables, among Gaussian, Poisson, Rayleigh and Exponential, is the <b>Poisson</b> distribution (2025 Q86). For a binomial with n trials and success probability p: mean = np, variance = np(1 − p). For a Poisson with rate λ: mean = variance = λ.</p>
+
+<h2>Counting</h2>
+<table><tr><th>Situation</th><th>Formula</th></tr>
+<tr><td>Ways to arrange n distinct objects in a row</td><td>n! = n × (n−1) × … × 1</td></tr>
+<tr><td>Arrange r chosen from n (order matters)</td><td>nPr = n! ÷ (n−r)!</td></tr>
+<tr><td>Choose r from n (order doesn't matter)</td><td>nCr = n! ÷ (r! (n−r)!)</td></tr>
+<tr><td>Arrange n objects where some are repeated (p of one kind, q of another…)</td><td>n! ÷ (p! q! …)</td></tr>
+<tr><td>Subsets of an m-element set</td><td>2ᵐ</td></tr></table>
+<div class="ex"><div class="label">Worked example (2025): letters of GAGANYAAN with no repetition</div>
+<p>The word has 9 letters but only four <i>different</i> letters: G, A, N, Y. "No repetition of a letter" means each letter can appear at most once in the new word, so a four-letter word uses G, A, N, Y once each. Number of arrangements = 4! = <b>24</b>. (3024 = 9×8×7×6 would wrongly treat the repeated letters as different.)</p></div>
+<div class="ex"><div class="label">Worked example (2025): subsets with no two consecutive numbers</div>
+<p>Let s(n) = number of such subsets of {1, …, n}. Take the largest element, n. Either n is <i>not</i> in the subset (s(n−1) ways), or it is, and then n−1 cannot be (s(n−2) ways). So s(n) = s(n−1) + s(n−2): the Fibonacci rule. Start: s(0) = 1 (the empty set), s(1) = 2. Then s(2) = 3, s(3) = 5, s(4) = 8, s(5) = 13, s(6) = 21, s(7) = 34, s(8) = 55, s(9) = 89, s(10) = 144, s(11) = 233, s(12) = <b>377</b>.</p></div>
+
+<h2>Propositional logic</h2>
+<p>A <b>proposition</b> is a statement that is true or false. Connectives: ¬ (not), ∧ (and), ∨ (or), → (implies), ↔ (if and only if). The one to master is implication:</p>
+<table><tr><th>p</th><th>q</th><th>p → q</th></tr><tr><td>T</td><td>T</td><td>T</td></tr><tr><td>T</td><td>F</td><td><b>F</b></td></tr><tr><td>F</td><td>T</td><td>T</td></tr><tr><td>F</td><td>F</td><td>T</td></tr></table>
+<p><b>p → q ≡ ¬p ∨ q</b>. (An implication is false only when the "if" is true and the "then" is false.) <b>De Morgan</b>: ¬(p ∧ q) ≡ ¬p ∨ ¬q; ¬(p ∨ q) ≡ ¬p ∧ ¬q. The <b>contrapositive</b> ¬q → ¬p is equivalent to p → q; the converse q → p is not.</p>
+<div class="ex"><div class="label">Worked example (2025)</div>
+<p>"If the vehicle is powered ON (q) and power is available to the avionics (p), then communication will be established (r)": (p ∧ q) → r. Replace A → B by ¬A ∨ B: ¬(p ∧ q) ∨ r. Apply De Morgan: <b>¬p ∨ ¬q ∨ r</b>.</p></div>
+<p><b>First-order logic</b> adds variables, predicates and the quantifiers ∀ (for all) and ∃ (there exists). Its connectives are the same ones: ¬ ∧ ∨ → ↔.</p>
+
+<h2>Sets</h2>
+<ul><li>|A| is the number of elements. A set with m elements has <b>2ᵐ subsets</b> (its power set).</li>
+<li><b>Cartesian product</b> A × B = all ordered pairs (a, b); |A × B| = |A| · |B|. The n-fold product Aⁿ = all ordered n-tuples from A has <b>mⁿ</b> elements when |A| = m.</li>
+<li>|A ∪ B| = |A| + |B| − |A ∩ B| (inclusion–exclusion).</li>
+<li>Relations on A (subsets of A × A): 2^(m²). Functions from A to B: |B|^|A|.</li></ul>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q60</div>
+<p class="q">How many subsets of {1, 2, 3, 4 … 12} can be formed such that no two elements in the subset are consecutive?</p>
+<button class="opt">144</button><button class="opt">377</button><button class="opt">610</button><button class="opt">89</button>
+<div class="why" hidden>s(n) = F(n+2); s(12) = 377 (144 = s(10), 233 = s(11), 610 = s(13)).</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q62</div>
+<p class="q">How many four letter words can be formed using the letters of the word 'GAGANYAAN' with no repetition of letters?</p>
+<button class="opt">3024</button><button class="opt">192</button><button class="opt">64</button><button class="opt">24</button>
+<div class="why" hidden>4 distinct letters, 4! = 24.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q59</div>
+<p class="q">Let p = power is available to avionics package, q = vehicle is powered ON, r = communication to the vehicle will be established. The logic form (p ∧ q) → r is equivalent to</p>
+<button class="opt">¬r → (p ∧ q)</button><button class="opt">p → (q ∧ r)</button><button class="opt">¬p ∨ ¬q ∨ r</button><button class="opt">None of the above</button>
+<div class="why" hidden>A → B ≡ ¬A ∨ B, then De Morgan.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q44</div>
+<p class="q">If a bag contains 6 blue balls, 5 white balls and 4 yellow balls and a ball is drawn at random, the probability of not getting a white ball is</p>
+<button class="opt">2/3</button><button class="opt">1/3</button><button class="opt">1/5</button><button class="opt">None of the above</button>
+<div class="why" hidden>10/15 = 2/3.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q61</div>
+<p class="q">If A is a set with m elements and n is a positive integer, the number of different elements in Aⁿ is</p>
+<button class="opt">m × n</button><button class="opt">m × m</button><button class="opt">mⁿ</button><button class="opt">nᵐ</button>
+<div class="why" hidden>Each of the n positions in the tuple has m choices.</div></div>
+
+<div class="foot">Primary source: Rosen, <i>Discrete Mathematics and Its Applications</i>, chapters 1, 2, 6. <a href="0029-ai-and-machine-learning.html">Next: AI and Machine Learning →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

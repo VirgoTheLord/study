@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>13 · Network Basics and Layers</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0012-memory-management.html">← Memory Management</a><a href="0014-data-link-layer.html">Next: Data Link Layer →</a></nav>
+<h1>13 · Network Basics &amp; the Layered Model</h1>
+<p class="sub"><span class="tag">Module D · Computer networks</span><span class="tag">Asked in 2023 and 2025</span> What a network is, the layers, the devices, delays, and application protocols.</p>
+
+<h2>Start here</h2>
+<p>A <b>computer network</b> is a set of devices (hosts) that exchange data over links. Sending a file across the world involves cables, wireless links, routers, error handling, addressing, and applications. To keep this manageable, the problem is split into <b>layers</b>. Each layer does one job and relies only on the layer below it, like a postal system: you write a letter (application), put it in an envelope (adds an address), the post office sorts it (routing), trucks carry it (physical).</p>
+
+<h2>Switching: how data travels</h2>
+<ul><li><b>Circuit switching</b>: a dedicated path is reserved for the whole call (old telephone network).</li>
+<li><b>Packet switching</b>: data is cut into <b>packets</b>, each sent independently and reassembled at the destination (the Internet). Shares links efficiently.</li></ul>
+
+<h2>The layers</h2>
+<table><tr><th>#</th><th>OSI layer</th><th>Job</th><th>Data unit</th><th>Examples</th></tr>
+<tr><td>7</td><td>Application</td><td>Services for user programs</td><td>Message</td><td>HTTP, FTP, SMTP, DNS, SNMP, DHCP</td></tr>
+<tr><td>6</td><td>Presentation</td><td>Formatting, encryption, compression</td><td>Message</td><td>SSL/TLS, JPEG</td></tr>
+<tr><td>5</td><td>Session</td><td>Open, manage, close dialogues</td><td>Message</td><td>Session control</td></tr>
+<tr><td>4</td><td>Transport</td><td>Process-to-process delivery, reliability, flow and congestion control</td><td>Segment</td><td>TCP, UDP (ports)</td></tr>
+<tr><td>3</td><td>Network</td><td>Host-to-host delivery across networks, routing, logical (IP) addressing</td><td>Packet</td><td>IP, ICMP, routers</td></tr>
+<tr><td>2</td><td>Data link</td><td>Node-to-node delivery on one link, MAC (physical) addressing, framing, error detection</td><td>Frame</td><td>Ethernet, Wi-Fi, switches, ARP</td></tr>
+<tr><td>1</td><td>Physical</td><td>Move raw bits over a medium</td><td>Bit</td><td>Cables, hubs, repeaters</td></tr></table>
+<p>The Internet's <b>TCP/IP model</b> merges the top three into one <b>Application</b> layer and the bottom two into <b>Link</b>, giving four layers: Application, Transport, Internet, Link.</p>
+<h3>Encapsulation</h3>
+<p>As data goes down the layers at the sender, <b>each layer adds its own header</b> in front (and the link layer a trailer too). At the receiver each layer strips its header. The extra bytes are <b>overhead</b>.</p>
+<div class="ex"><div class="label">Worked example: header overhead (2023 question)</div>
+<p>A message of 270 bytes passes through 5 layers; each adds a 6-byte header. Total headers = 5 × 6 = 30 bytes. Total sent = 270 + 30 = 300 bytes. Fraction wasted = 30 / 300 = 10%.</p></div>
+<div class="box tip"><p><b>Troubleshooting tip:</b> a wrong <b>default gateway</b> setting means the host can't reach anything outside its own network. Routing and logical addressing belong to Layer 3, so it's a <b>network layer</b> problem.</p></div>
+
+<h2>Network devices and the layer they work at</h2>
+<table><tr><th>Device</th><th>Layer</th><th>What it does</th></tr>
+<tr><td>Repeater / hub</td><td>1</td><td>Regenerates/broadcasts the signal to all ports</td></tr>
+<tr><td>Bridge / switch</td><td>2</td><td>Forwards frames by MAC address, only to the right port</td></tr>
+<tr><td>Router</td><td>3</td><td>Forwards packets between networks by IP address</td></tr>
+<tr><td>Gateway</td><td>up to 7</td><td>Connects networks with different protocols</td></tr></table>
+
+<h2>Delays and speed (you'll need these soon)</h2>
+<div class="box"><p><b>Transmission delay</b> = packet size ÷ bandwidth (time to push all bits onto the wire)<br><b>Propagation delay</b> = distance ÷ signal speed (time for a bit to travel)<br><b>Round-trip time (RTT)</b> ≈ 2 × propagation delay (+ queuing and processing)<br>Units: 1 Gbps = 10⁹ bits per second; 1 byte = 8 bits.</p></div>
+
+<h2>Application-layer protocols</h2>
+<table><tr><th>Protocol</th><th>Use</th></tr>
+<tr><td>HTTP / HTTPS</td><td>Web pages (HTTPS = HTTP over TLS, encrypted)</td></tr>
+<tr><td>DNS</td><td>Translates names (example.com) to IP addresses</td></tr>
+<tr><td>SMTP / POP3 / IMAP</td><td>Send mail / retrieve mail</td></tr>
+<tr><td>FTP / SFTP</td><td>File transfer (SFTP is encrypted)</td></tr>
+<tr><td>DHCP</td><td>Automatically hands out IP addresses</td></tr>
+<tr><td>SNMP</td><td>Network monitoring and management (SNMPv3 adds encryption)</td></tr></table>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q35</div>
+<p class="q">While troubleshooting an Internet access problem reported by a user, a computer technician finds that the default gateway setting is wrong. Which layer of the OSI model is associated with the cause of the problem?</p>
+<button class="opt">Layer 2</button><button class="opt">Layer 5</button><button class="opt">Layer 3</button><button class="opt">Layer 4</button>
+<div class="why" hidden>Gateways and IP routing belong to the network layer, Layer 3.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q14</div>
+<p class="q">For internal data communication through a computer network, a 5-layer protocol hierarchy is proposed. Applications generate 270-byte messages. At each layer a 6-byte header is added. What fraction of network bandwidth (in %) is wasted due to headers?</p>
+<button class="opt">5%</button><button class="opt">20%</button><button class="opt">10%</button><button class="opt">15%</button>
+<div class="why" hidden>30 header bytes out of 300 total = 10%. Dividing by 270 instead of 300 would give 11%, which is not an option; always divide by the <i>total</i> sent.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">Practice (written by me)</div>
+<p class="q">Which device forwards frames using MAC addresses and sends them only to the destination port?</p>
+<button class="opt">Hub</button><button class="opt">Switch</button><button class="opt">Repeater</button><button class="opt">Router</button>
+<div class="why" hidden>A switch learns which MAC address is on which port. A hub repeats to every port; a router works with IP addresses.</div></div>
+
+<div class="foot">Primary source: Kurose &amp; Ross, <i>Computer Networking</i>, chapters 1–2. <a href="0014-data-link-layer.html">Next: Data Link Layer →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

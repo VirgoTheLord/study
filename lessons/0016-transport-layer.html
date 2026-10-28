@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>16 · Transport Layer and Window Sizing</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0015-ip-addressing-and-subnetting.html">← IP Addressing</a><a href="0017-cryptography.html">Next: Cryptography →</a></nav>
+<h1>16 · Transport Layer, TCP &amp; Window Sizing</h1>
+<p class="sub"><span class="tag">Module D · Computer networks</span><span class="tag">Asked in 2023 and 2025</span> TCP vs UDP, reliability, congestion control, and the bandwidth–delay calculation.</p>
+
+<h2>Start here</h2>
+<p>IP gets packets to the right <i>computer</i> but makes no promises: packets may be lost, duplicated or arrive out of order. The transport layer delivers data to the right <i>program</i> on that computer, identified by a <b>port number</b> (e.g. 80 = web, 25 = mail, 53 = DNS), and can add reliability on top.</p>
+<table><tr><th></th><th>TCP</th><th>UDP</th></tr>
+<tr><td>Connection</td><td>Connection-oriented (handshake first)</td><td>Connectionless</td></tr>
+<tr><td>Reliability</td><td>Acknowledgements, retransmission, ordering</td><td>None: best effort</td></tr>
+<tr><td>Flow / congestion control</td><td>Yes</td><td>No</td></tr>
+<tr><td>Speed / overhead</td><td>Slower, 20-byte header</td><td>Fast, 8-byte header</td></tr>
+<tr><td>Used for</td><td>Web, email, file transfer</td><td>DNS, video calls, streaming, games</td></tr></table>
+
+<h2>TCP in four ideas</h2>
+<ol class="steps"><li><b>Three-way handshake</b> to open a connection: client sends SYN, server replies SYN-ACK, client sends ACK.</li>
+<li><b>Acknowledgements and retransmission</b>: every segment has a sequence number; the receiver ACKs what it got; the sender resends anything not ACKed in time.</li>
+<li><b>Flow control</b>: the receiver advertises its free buffer space (the <i>window</i>) so a fast sender can't overwhelm a slow receiver.</li>
+<li><b>Congestion control</b>: the sender limits itself to avoid overloading the network.</li></ol>
+<h3>Congestion control</h3>
+<p>The sender maintains a <b>congestion window (cwnd)</b>. <b>Slow start</b>: begin at 1 segment and double cwnd every round trip until a threshold (exponential growth, despite the name). Then <b>congestion avoidance</b>: grow by 1 segment per round trip (additive increase). On loss, cut the window (multiplicative decrease, often halving). Together: <b>AIMD</b>.</p>
+
+<h2>How big should the window be? (the key calculation)</h2>
+<p>Picture a pipe. The sender pushes packets in; the first ACK returns one round-trip time (RTT) after the first packet left. To keep the pipe full, the sender must have sent enough packets to cover that whole RTT before the first ACK arrives.</p>
+<div class="box"><p><b>Bandwidth–delay product (BDP)</b> = bandwidth × RTT = the number of bits "in flight" when the pipe is full.<br><b>Window needed for full utilisation</b> = BDP (in bits, bytes or packets).<br><b>Utilisation</b> with window W packets = <b>W × Tt / (Tt + RTT)</b>, capped at 1, where Tt = packet size ÷ bandwidth. (This is also W ÷ (1 + RTT/Tt).)</p></div>
+<div class="ex"><div class="label">Worked example (2025 question): TCP window to fill a link</div>
+<p>Bandwidth 8,192,000 bits/s, latency 32 ms. Take latency as the round-trip time. BDP = 8,192,000 × 0.032 = 262,144 bits. In bytes: 262,144 ÷ 8 = <b>32,768 bytes</b>. (If the 32 ms were one-way, the RTT would be 64 ms and the answer 65,536 bytes: the question says "latency", and 32,768 is the usual reading.)</p></div>
+<div class="ex"><div class="label">Worked example (2023 question): utilisation above 96%</div>
+<p>Link 1 Gbps, RTT 25 ms, packets of 1000 bytes. Ignore ACK size.</p>
+<ol class="steps"><li>Tt = 1000 × 8 bits ÷ 10⁹ bps = 8 µs.</li><li>RTT ÷ Tt = 25 ms ÷ 8 µs = 25,000 µs ÷ 8 µs = 3125.</li><li>Utilisation = W ÷ (1 + 3125) = W ÷ 3126.</li><li>Need W ÷ 3126 &gt; 0.96, so W &gt; 3001.</li><li>Options: 2000, 2400, 3000, 4000. 3000 gives 95.97%, just under 96%. So <b>4000 packets</b>.</li></ol></div>
+<p>Stop-and-wait is the special case W = 1: utilisation = Tt ÷ (Tt + RTT), terrible on long fast links (here 8 µs ÷ 25.008 ms ≈ 0.03%).</p>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q12</div>
+<p class="q">A host in one organisation is connected to another host using a 1 Gbps link with 25 ms RTT. The packet size is tuned to 1000 bytes. To have channel utilisation &gt; 96%, how big should the window size be (in packets), assuming ACK packets have no impact?</p>
+<button class="opt">2000 packets</button><button class="opt">2400 packets</button><button class="opt">3000 packets</button><button class="opt">4000 packets</button>
+<div class="why" hidden>W/3126 &gt; 0.96 → W &gt; 3001. Only 4000 qualifies.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q40</div>
+<p class="q">What is the ideal TCP window size of a sender to fully utilize a link of bandwidth 8192000 bps and latency of 32 ms?</p>
+<button class="opt">65536 bytes</button><button class="opt">8192 bytes</button><button class="opt">16384 bytes</button><button class="opt">32768 bytes</button>
+<div class="why" hidden>BDP = 8,192,000 × 0.032 / 8 = 32,768 bytes (treating latency as the round-trip time).</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">Practice (written by me)</div>
+<p class="q">In TCP slow start, if cwnd is 4 segments now, what will it be after one more round trip without loss?</p>
+<button class="opt">5 segments</button><button class="opt">6 segments</button><button class="opt">8 segments</button><button class="opt">16 segments</button>
+<div class="why" hidden>Slow start doubles cwnd each round trip: 4 → 8.</div></div>
+
+<div class="foot">Primary source: Kurose &amp; Ross, chapter 3. <a href="0017-cryptography.html">Next: Cryptography →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

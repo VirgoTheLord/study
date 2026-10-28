@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>20 · Functional Dependencies and Normalization</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0019-relational-model-and-sql.html">← Relational Model and SQL</a><a href="0021-transactions-indexes-nosql.html">Next: Transactions, Indexes, NoSQL →</a></nav>
+<h1>20 · Functional Dependencies &amp; Normalization</h1>
+<p class="sub"><span class="tag">Module F · Databases</span><span class="tag">Asked in 2023 and 2025</span> Why bad table design causes trouble, and how to read and apply the normal forms.</p>
+
+<h2>Start here: the problem normalization solves</h2>
+<p>Suppose one table stores orders like this:</p>
+<table><tr><th>order_id</th><th>customer</th><th>customer_city</th><th>item</th></tr><tr><td>1</td><td>Asha</td><td>Pune</td><td>Pen</td></tr><tr><td>2</td><td>Asha</td><td>Pune</td><td>Book</td></tr><tr><td>3</td><td>Asha</td><td>Pune</td><td>Bag</td></tr></table>
+<p>Asha's city is stored three times. Three kinds of trouble follow: <b>update anomaly</b> (change her city in one row but forget the others: now the data disagrees), <b>insertion anomaly</b> (can't record a customer who hasn't ordered yet), <b>deletion anomaly</b> (deleting her last order loses the fact that she exists). <b>Normalization</b> is the process of splitting tables so each fact is stored once.</p>
+
+<h2>Functional dependencies (FDs)</h2>
+<div class="def"><p><b>X → Y</b> ("X determines Y") means: whenever two rows agree on X, they must agree on Y. Example: roll_no → name (a roll number determines the name). customer → customer_city.</p></div>
+<h3>Closure: the main tool</h3>
+<p>The <b>closure X⁺</b> of a set of attributes X is everything X determines (directly or through chains). Algorithm: start with X⁺ = X; keep adding the right side of any FD whose left side is already inside X⁺; stop when nothing new is added.</p>
+<div class="ex"><div class="label">Worked example: finding a candidate key (2025 question)</div>
+<p>R(A, B, C, D, E, P, G) with FDs: AB → CD, DE → P, C → E, P → C, B → G.</p>
+<ol class="steps"><li>Look for attributes that never appear on a right-hand side: A and B. So any key must contain A and B.</li>
+<li>Compute (AB)⁺: start {A, B}. AB → CD adds C, D. B → G adds G. C → E adds E. DE → P adds P (now we have D and E). Result: {A, B, C, D, E, G, P}: every attribute.</li>
+<li>So <b>AB is a candidate key</b>, and it is the only one (A and B are both required). Prime attributes (part of some key): A, B. Non-prime: C, D, E, P, G.</li></ol></div>
+
+<h2>The normal forms, step by step</h2>
+<table><tr><th>Form</th><th>Rule</th><th>Typical violation</th></tr>
+<tr><td><b>1NF</b></td><td>Every cell holds a single atomic value; no repeating groups</td><td>A "phones" cell containing "111, 222"</td></tr>
+<tr><td><b>2NF</b></td><td>1NF, and no <b>partial dependency</b>: no non-prime attribute depends on only <i>part</i> of a candidate key</td><td>Key (A,B) but B → G</td></tr>
+<tr><td><b>3NF</b></td><td>2NF, and no <b>transitive dependency</b>. Precisely: for every FD X → A, either X is a super key or A is a prime attribute</td><td>customer_city depends on customer, which is not a key</td></tr>
+<tr><td><b>BCNF</b></td><td>For every non-trivial FD X → A, X must be a super key (stricter than 3NF)</td><td>A prime attribute determined by a non-key</td></tr>
+<tr><td><b>4NF</b></td><td>BCNF, and no non-trivial <b>multivalued dependency</b></td><td>Independent multi-valued facts stuffed in one table</td></tr>
+<tr><td><b>5NF</b></td><td>No non-trivial <b>join dependency</b> that isn't implied by the keys</td><td></td></tr></table>
+<div class="box tip"><p>Memory hook: 2NF = "the whole key", 3NF = "nothing but the key", BCNF = "so help me Codd." Each level removes one more kind of redundancy. 5NF is the one concerned with <b>join dependency</b>.</p></div>
+<div class="ex"><div class="label">Applying it (continuing the 2025 example)</div>
+<p>Key is AB. Check each FD for partial dependency: B → G has a left side (B) that is only <i>part</i> of the key, and G is non-prime. That is a partial dependency, so R is <b>not in 2NF</b> (and therefore not in 3NF or BCNF either).</p>
+<p>Fixing: decompose into R1(B, G) and R2(A, B, C, D, E, P) and continue checking.</p></div>
+<div class="ex"><div class="label">Quick test order for the exam</div>
+<ol class="steps"><li>Find all candidate keys with closures.</li><li>For each FD X → A: if X is a super key, fine.</li><li>If not, but A is prime: OK for 3NF, violates BCNF.</li><li>If not and A is non-prime: if X is a proper part of a key, it violates 2NF; otherwise (X is not part of any key) it violates 3NF but not 2NF.</li></ol></div>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q48</div>
+<p class="q">Consider R = (A, B, C, D, E, P, G) and the functional dependencies AB→CD, DE→P, C→E, P→C, B→G. Which one of the following is true?</p>
+<button class="opt">R is in BCNF</button><button class="opt">R is in 3NF, but not BCNF</button><button class="opt">R is in 2NF, but not 3NF</button><button class="opt">R is not in 2NF</button>
+<div class="why" hidden>The only candidate key is AB. The FD B → G is a partial dependency (non-prime G depends on part of the key), so R is not in 2NF.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q34</div>
+<p class="q">Fifth Normal form is concerned with</p>
+<button class="opt">Join dependency</button><button class="opt">Domain-key</button><button class="opt">Multivalued dependency</button><button class="opt">Functional dependency</button>
+<div class="why" hidden>5NF (project-join normal form) deals with join dependencies. Multivalued dependency is 4NF; functional dependencies drive 2NF–BCNF.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">Practice (written by me)</div>
+<p class="q">R(A, B, C) with FDs A → B and B → C. The candidate key is A. R is in</p>
+<button class="opt">BCNF</button><button class="opt">2NF but not 3NF</button><button class="opt">1NF but not 2NF</button><button class="opt">3NF but not BCNF</button>
+<div class="why" hidden>Key A is a single attribute, so no partial dependency is possible: 2NF holds. B → C has B not a key and C non-prime: a transitive dependency (A → B → C), violating 3NF.</div></div>
+
+<div class="foot">Primary source: Silberschatz, Korth, Sudarshan, chapter 8. <a href="0021-transactions-indexes-nosql.html">Next: Transactions, Indexes, NoSQL →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>14 · Data Link Layer</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0013-network-basics-and-layers.html">← Network Basics</a><a href="0015-ip-addressing-and-subnetting.html">Next: IP Addressing →</a></nav>
+<h1>14 · The Data Link Layer: Errors, Flow Control, Ethernet</h1>
+<p class="sub"><span class="tag">Module D · Computer networks</span><span class="tag">Asked in 2023 and 2025</span> Error detection and correction, Hamming distance, CRC, CSMA/CD, Wi-Fi speeds.</p>
+
+<h2>Start here</h2>
+<p>The data link layer moves frames between two directly connected devices. Wires and radio are noisy, so bits sometimes flip. Two jobs follow: <b>detect</b> that a frame was damaged, or even <b>correct</b> it. And when many devices share one cable, rules are needed to avoid talking over one another.</p>
+
+<h2>Error detection</h2>
+<p>Idea: add a few extra bits (redundancy) computed from the data. The receiver recomputes them; a mismatch means an error.</p>
+<h3>Parity</h3>
+<p>Add one bit so the total count of 1s is even (<b>even parity</b>) or odd (<b>odd parity</b>). Data 1011001 has four 1s, so even parity adds 0; data 1011011 has five 1s, so even parity adds 1. It detects any <b>odd</b> number of flipped bits but <b>misses two flips</b> (the count stays even), and it can't tell which bit flipped.</p>
+<h3>Checksum</h3>
+<p>Add up the data words and send the sum (internet checksum is a 16-bit one's complement sum). The receiver adds everything including the checksum. Cheap, but weaker than CRC.</p>
+<h3>CRC (cyclic redundancy check)</h3>
+<p>Treat the data as a binary polynomial and divide it by a fixed <b>generator</b> using XOR (no carries). Send the remainder; the receiver divides and expects remainder 0. It detects all single and double errors and all burst errors shorter than the generator. It detects but does not correct.</p>
+<div class="ex"><div class="label">Worked example</div>
+<p>Data 1101011011, generator 10011 (degree 4, so append 4 zeros): 11010110110000. Long-divide with XOR by 10011 at each leading 1. The remainder is <b>1110</b>. The sender transmits 1101011011 1110.</p></div>
+
+<h2>Error correction and Hamming distance</h2>
+<div class="def"><p>The <b>Hamming distance</b> between two equal-length bit strings = the number of positions where they differ. 01000 and 00000 differ in 1 position (distance 1). The <b>minimum distance d</b> of a code is the smallest distance between any two valid codewords.</p></div>
+<div class="box"><p>A code with minimum distance <b>d</b> can <b>detect up to d − 1</b> bit errors and <b>correct up to ⌊(d − 1)/2⌋</b>.</p></div>
+<p>To correct, the receiver picks the valid codeword nearest to what arrived. If two codewords are equally near, the error <b>cannot be corrected</b>.</p>
+<div class="ex"><div class="label">Worked example (2025 question)</div>
+<p>Valid codewords: A = 00000, B = 01110, C = 11000. Received: 01000. Distance to A = 1 (one bit differs). To B: 01000 vs 01110 differ in 2 places. To C: 01000 vs 11000 differ in 1 place. A and C tie at distance 1, so the system cannot decide: <b>unable to correct</b>.</p></div>
+<p><b>Which codes correct errors?</b> Hamming codes, Reed–Solomon codes, LDPC (low-density parity-check) and convolutional codes are <b>error-correcting</b>. Parity, checksums and CRC are error-<b>detecting</b> only.</p>
+<p><b>Hamming code</b>: for m data bits you need r check bits with 2ʳ ≥ m + r + 1; check bits sit at positions 1, 2, 4, 8, … Each check bit covers a set of positions, and the pattern of failed checks spells out the position of the single bad bit.</p>
+
+<h2>Flow control and ARQ</h2>
+<ul><li><b>Stop-and-wait</b>: send one frame, wait for its acknowledgement (ACK), repeat. Simple but wasteful on long links.</li>
+<li><b>Sliding window</b>: allow W frames outstanding at once. <b>Go-Back-N</b>: on an error, resend from the lost frame onward. <b>Selective Repeat</b>: resend only the lost frame.</li></ul>
+
+<h2>Sharing a medium: MAC protocols</h2>
+<p><b>ALOHA</b>: send whenever you like and hope for no collision (poor efficiency). <b>CSMA</b>: listen first, send if quiet. <b>CSMA/CD</b> (Ethernet, wired): listen first, and <i>while sending</i> keep listening for collisions (<b>c</b>ollision <b>d</b>etection); on a collision, stop and retry after a random wait. <b>CSMA/CA</b> (Wi-Fi) avoids collisions instead of detecting them.</p>
+<h3>Why Ethernet has a minimum frame size</h3>
+<p>A sender must still be transmitting when news of a collision reaches it from the far end. A signal takes time Tp to cross the cable and the collision signal Tp to return, so the frame must last at least 2·Tp:</p>
+<div class="box"><p><b>Minimum frame transmission time ≥ 2 × Tp</b>, so minimum frame size = 2 × Tp × bandwidth.</p></div>
+<div class="ex"><div class="label">Worked example (2023 question)</div>
+<p>Minimum frame 1500 bytes = 12,000 bits. Cable 1 km, signal speed 250,000 km/s: Tp = 1 / 250,000 s = 4 µs, so 2Tp = 8 µs. Bandwidth = frame size ÷ 2Tp = 12,000 bits ÷ 8 µs = 1.5 × 10⁹ = <b>1.5 Gbps</b>.</p></div>
+
+<h2>Wi-Fi (IEEE 802.11) speeds</h2>
+<table><tr><th>Standard</th><th>Headline speed</th></tr><tr><td>802.11b</td><td>11 Mbps</td></tr><tr><td>802.11a / g</td><td>54 Mbps</td></tr><tr><td>802.11n</td><td>up to 600 Mbps</td></tr><tr><td>802.11ac</td><td>about 3.5 Gbps</td></tr><tr><td>802.11ad</td><td>up to 7 Gbps</td></tr></table>
+<p><b>ARP</b> (Address Resolution Protocol) finds the MAC address that belongs to a known IP address on the local network.</p>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q13</div>
+<p class="q">In a computer network using CSMA/CD, the minimum frame size for data transfer is 1500 bytes. What will be the data transfer speed in this network over 1 km cable, if the signal speed in the cable is 250000 km/sec and no repeaters are used?</p>
+<button class="opt">1 Gbps</button><button class="opt">100 Mbps</button><button class="opt">500 Mbps</button><button class="opt">1.5 Gbps</button>
+<div class="why" hidden>Tp = 4 µs, 2Tp = 8 µs, frame = 12,000 bits → 1.5 Gbps.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q37</div>
+<p class="q">A communication system uses the three 5-bit words A: 00000, B: 01110, C: 11000 as the only valid codewords, with error correction using Hamming distance. The receiver gets 01000. What would the system conclude?</p>
+<button class="opt">It will correct to codeword A</button><button class="opt">It will correct to codeword B</button><button class="opt">It will correct to codeword C</button><button class="opt">It will be unable to correct the error</button>
+<div class="why" hidden>A and C are both at distance 1, B at distance 2. A tie means correction is impossible.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q16</div>
+<p class="q">Which of the following is true?</p>
+<button class="opt">Both Parity and Cyclic Redundancy Check are error correcting codes</button><button class="opt">Both Parity and Low Density Parity Check Code are error correcting codes</button><button class="opt">Both Reed-Solomon code and Low Density Parity Check Code are error correcting codes</button><button class="opt">Both Cyclic Redundancy Check and Low Density Parity Check Code are error correcting codes</button>
+<div class="why" hidden>Parity and CRC only detect. Reed–Solomon and LDPC correct.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q22</div>
+<p class="q">Which of the following methods is used to detect double errors?</p>
+<button class="opt">Odd Parity</button><button class="opt">Even Parity</button><button class="opt">Checksum (CRC)</button><button class="opt">Checksum (XOR)</button>
+<div class="why" hidden>A single parity bit misses two flipped bits (the parity stays the same). CRC detects double errors. A plain XOR checksum can miss two flips in the same bit position.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q15</div>
+<p class="q">Match 802.11 versions with speeds: (i) 802.11ac (ii) 802.11 a/g (iii) 802.11 ad (iv) 802.11 b with (P) 7 Gbps (Q) 11 Mbps (R) 54 Mbps (S) 3.5 Gbps.</p>
+<button class="opt">(i)–S, (ii)–R, (iii)–P, (iv)–Q</button><button class="opt">(i)–S, (ii)–R, (iii)–Q, (iv)–P</button><button class="opt">(i)–R, (ii)–S, (iii)–P, (iv)–Q</button><button class="opt">(i)–R, (ii)–Q, (iii)–P, (iv)–S</button>
+<div class="why" hidden>ac = 3.5 Gbps, a/g = 54 Mbps, ad = 7 Gbps, b = 11 Mbps.</div></div>
+
+<div class="foot">Primary source: Kurose &amp; Ross, chapter 6; Forouzan, <i>Data Communications and Networking</i>, chapters 10–11. <a href="0015-ip-addressing-and-subnetting.html">Next: IP Addressing →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

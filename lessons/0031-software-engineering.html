@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>31 · Software Engineering and Testing</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0030-big-data-and-cloud.html">← Big Data and Cloud</a><a href="0032-aptitude-reasoning.html">Next: Aptitude, Reasoning →</a></nav>
+<h1>31 · Software Engineering &amp; Testing</h1>
+<p class="sub"><span class="tag">Module J · Software engineering</span><span class="tag">Asked in 2023 and 2025</span> Process models, testing, metrics, maturity levels and risk.</p>
+
+<h2>Start here</h2>
+<p><b>Software engineering</b> is the discipline of building software in an organised, measurable, repeatable way, as opposed to ad-hoc coding. It covers the life of a project: requirements → design → coding → testing → maintenance. This is the <b>software development life cycle (SDLC)</b>.</p>
+<ul><li><b>Waterfall</b>: finish each phase before starting the next. Simple but rigid.</li><li><b>Incremental / iterative</b>: build and deliver in pieces.</li><li><b>Spiral</b>: repeated cycles with explicit <b>risk</b> analysis.</li><li><b>Prototype</b>: build a quick model to clarify requirements.</li><li><b>Agile</b>: short iterations, close customer feedback.</li></ul>
+
+<h2>Testing</h2>
+<p><b>Testing</b> is running the software to find defects. Levels of testing, from smallest to largest:</p>
+<table><tr><th>Level</th><th>What is tested</th></tr><tr><td><b>Unit</b></td><td>Individual functions/modules, by the developer</td></tr><tr><td><b>Integration</b></td><td>How modules work together (their interfaces)</td></tr><tr><td><b>System</b></td><td>The complete system against the specification</td></tr><tr><td><b>Acceptance</b></td><td>Does it satisfy the customer's needs? <b>Alpha testing</b> is done at the developer's site by internal users; <b>beta testing</b> is done at the customer's site by real users. Both are forms of acceptance testing.</td></tr></table>
+<h3>The V-model</h3>
+<p>The V-model pairs each development phase with the test that checks it:</p>
+<figure><svg viewBox="0 0 620 200" width="620" role="img" aria-label="V model">
+<g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="10" y="10" width="200" height="34" rx="6"/><rect x="40" y="58" width="200" height="34" rx="6"/><rect x="70" y="106" width="200" height="34" rx="6"/><rect x="100" y="154" width="200" height="34" rx="6"/>
+<rect x="410" y="10" width="200" height="34" rx="6"/><rect x="380" y="58" width="200" height="34" rx="6"/><rect x="350" y="106" width="200" height="34" rx="6"/><rect x="320" y="154" width="200" height="34" rx="6"/></g>
+<g stroke="currentColor" stroke-dasharray="4 3" stroke-width="1.2"><path d="M210 27h200M240 75h140M270 123h80"/><path d="M300 171h20"/></g>
+<g text-anchor="middle"><text x="110" y="32">Requirements</text><text x="140" y="80">System design</text><text x="170" y="128">Architecture / module design</text><text x="200" y="176">Coding</text>
+<text x="510" y="32" font-weight="bold">Acceptance testing</text><text x="480" y="80" font-weight="bold">System testing</text><text x="450" y="128" font-weight="bold">Integration testing</text><text x="420" y="176" font-weight="bold">Unit testing</text></g></svg>
+<figcaption>Outermost pair: Requirements ↔ Acceptance. Innermost pair: Coding ↔ Unit.</figcaption></figure>
+<h3>Black-box vs white-box</h3>
+<table><tr><th></th><th>Black-box</th><th>White-box (glass-box)</th></tr><tr><td>Based on</td><td>Specification only; ignore internals</td><td>The code's internal structure</td></tr><tr><td>Techniques</td><td>Equivalence partitioning, boundary value analysis</td><td>Statement coverage, branch coverage, condition coverage, <b>MC/DC</b>, path coverage, <b>cyclomatic complexity</b></td></tr></table>
+<p><b>Grey-box</b> testing uses partial knowledge of the internals.</p>
+<ul><li><b>MC/DC</b> = <b>Modified Condition/Decision Coverage</b>: each condition inside a decision must be shown to independently affect the decision's outcome. Required for safety-critical software (aerospace).</li>
+<li><b>Regression testing</b>: re-running earlier tests after a <b>change</b> to the software to make sure nothing that used to work is now broken.</li></ul>
+
+<h2>Cyclomatic complexity</h2>
+<p>Draw the program's <b>control-flow graph</b> (nodes = blocks of code, edges = possible jumps). McCabe's <b>cyclomatic complexity</b> measures the number of independent paths, hence the minimum number of tests needed for full path coverage. It belongs to <b>white-box</b> testing.</p>
+<div class="box"><p><b>V(G) = E − N + 2P</b>, with E edges, N nodes and P connected components (P = 1 for one program, giving E − N + 2). Equivalent shortcuts: V(G) = (number of decision points, like if/while) + 1, or the number of regions of the flow graph.</p></div>
+<div class="ex"><div class="label">Worked example</div>
+<p>A function with one <code>if</code> and one <code>while</code> has 2 decisions, so V(G) = 2 + 1 = 3 independent paths. Equivalently, a flow graph with 7 edges and 6 nodes gives 7 − 6 + 2 = 3.</p></div>
+
+<h2>Process maturity: CMM</h2>
+<p>The <b>Capability Maturity Model</b> rates how mature an organisation's software process is on five levels:</p>
+<p class="chain"><span>1 Initial</span> → <span>2 Repeatable</span> → <span>3 Defined</span> → <span>4 Managed</span> → <span>5 Optimizing</span></p>
+<p>Mnemonic: <b>I R D M O</b>. (Initial = chaotic, ad hoc; Repeatable = basic project management; Defined = standard processes documented across the organisation; Managed = measured quantitatively; Optimizing = continuous improvement.)</p>
+
+<h2>Risk management</h2>
+<p>A <b>risk</b> is something that might go wrong. The stages, in order: <b>risk identification → risk analysis → risk planning → risk monitoring</b>. (First you must find the risks, then judge how likely and how damaging they are, then plan what to do, then watch them.)</p>
+
+<h2>Design metrics</h2>
+<ul><li><b>Fan-in</b> of a function X = the number of functions that <b>call</b> X. <b>Fan-out</b> = the number of functions that X <b>calls</b>.</li>
+<li><b>High fan-in</b> means X is heavily used and tightly coupled to the rest of the design (changing it affects many callers). <b>High fan-out</b> means X depends on many others, so its own complexity is probably high.</li>
+<li><b>Coupling</b> = how much modules depend on each other (aim for low). <b>Cohesion</b> = how closely a module's parts belong together (aim for high).</li></ul>
+
+<h2>Estimation: function points</h2>
+<p><b>Function points (FP)</b> measure the size of software from its functionality, independent of programming language. Count five things and weight them:</p>
+<div class="box"><p><b>UFP</b> (unadjusted function points) = Σ (count × weight) over: user inputs, user outputs, user enquiries, internal files, external interfaces.<br><b>CAF</b> (complexity adjustment factor) = 0.65 + 0.01 × Σ Fᵢ, over 14 factors, each rated 0–5.<br><b>FP = UFP × CAF</b></p></div>
+<div class="ex"><div class="label">Worked example (2025 question)</div>
+<p>Inputs 30 × 4 = 120; outputs 60 × 5 = 300; enquiries 20 × 4 = 80; files 5 × 10 = 50; interfaces 4 × 7 = 28. UFP = 120 + 300 + 80 + 50 + 28 = 578. All 14 adjustment values are "average = 3": ΣFᵢ = 42, CAF = 0.65 + 0.42 = 1.07. FP = 578 × 1.07 = <b>618.46</b>.</p></div>
+
+<h2>Diagrams</h2>
+<ul><li><b>DFD (data flow diagram)</b>: how data moves between processes (functional view).</li><li><b>ER diagram</b>: structure of data (static view).</li><li><b>UML</b>: object-oriented modelling (class, sequence, use-case diagrams).</li><li><b>Structure chart</b>: module hierarchy and calls. <b>HIPO</b> (Hierarchy + Input-Process-Output) charts document a system's functions as a hierarchy.</li></ul>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q77</div>
+<p class="q">Number of user inputs 30 (weight 4), user outputs 60 (5), user enquiries 20 (4), files 5 (10), external interfaces 4 (7). All complexity adjustment values are average with scale = 3. The function point value is</p>
+<button class="opt">681.46</button><button class="opt">186.46</button><button class="opt">816.46</button><button class="opt">618.46</button>
+<div class="why" hidden>578 × 1.07 = 618.46.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q73</div>
+<p class="q">As per CMM, the process maturity levels are Level 1: Initial, Level 2: (A), Level 3: (B), Level 4: (C), Level 5: Optimizing. Identify (A), (B), (C).</p>
+<button class="opt">A: Defined, B: Repeatable, C: Managed</button><button class="opt">A: Repeatable, B: Managed, C: Defined</button><button class="opt">A: Repeatable, B: Defined, C: Managed</button><button class="opt">A: Defined, B: Managed, C: Repeatable</button>
+<div class="why" hidden>I R D M O: Repeatable, Defined, Managed.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q74</div>
+<p class="q">Which is the correct order for stages of the risk management process of a software project?</p>
+<button class="opt">Identification → planning → analysis → monitoring</button><button class="opt">Planning → identification → analysis → monitoring</button><button class="opt">Analysis → identification → planning → monitoring</button><button class="opt">Identification → analysis → planning → monitoring</button>
+<div class="why" hidden>Find the risks, assess them, plan responses, monitor.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q75</div>
+<p class="q">X is a function in a software project. (i) Fan-in is the number of functions that call X. (ii) Fan-out is the number of functions called by X. (iii) High fan-in means X is tightly coupled to the rest of the design. (iv) High fan-out means the overall complexity of X may be high. Which option is correct?</p>
+<button class="opt">Only (i) and (ii) are true</button><button class="opt">Only (i) and (iii) are true</button><button class="opt">Only (ii) and (iv) are true</button><button class="opt">(i), (ii), (iii) and (iv) are true</button>
+<div class="why" hidden>All four match the textbook definitions and interpretations.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2025 · Q76 and Q72</div>
+<p class="q">In the V-model, listing the test levels from the one paired with requirements to the one paired with coding gives ___; and alpha/beta testing belong to ___.</p>
+<button class="opt">Acceptance, System, Integration, Unit; acceptance testing</button><button class="opt">Acceptance, Integration, System, Unit; system testing</button><button class="opt">Unit, System, Integration, Acceptance; unit testing</button><button class="opt">Unit, Integration, System, Acceptance; integration testing</button>
+<div class="why" hidden>Acceptance ↔ requirements, System ↔ design, Integration ↔ module design, Unit ↔ coding. Alpha and beta testing are acceptance testing.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q79</div>
+<p class="q">McCabe's cyclomatic complexity number of a program control graph G with e edges, n nodes and p disconnected parts is defined as</p>
+<button class="opt">n − e + 2p</button><button class="opt">e − n + 2 + p</button><button class="opt">e − n + 2p</button><button class="opt">n − e + p</button>
+<div class="why" hidden>V(G) = E − N + 2P.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q76 and Q77</div>
+<p class="q">The MC/DC software testing technique stands for ___; regression testing focuses on validating ___.</p>
+<button class="opt">Multiple Conditions Decision Coverage; module interfaces</button><button class="opt">Multiple Coverage Decision Conditions; module structure</button><button class="opt">Modified Condition Decision Coverage; software changes</button><button class="opt">None of the above</button>
+<div class="why" hidden>Modified Condition/Decision Coverage; regression = after changes.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2025 · Q71</div>
+<p class="q">Cyclomatic complexity is associated with</p>
+<button class="opt">White Box Testing</button><button class="opt">Black Box Testing</button><button class="opt">Grey Box Testing</button><button class="opt">None of the above</button>
+<div class="why" hidden>It is computed from the code's control flow, so it is white-box.</div></div>
+
+<div class="foot">Primary source: Pressman, <i>Software Engineering: A Practitioner's Approach</i>. <a href="0032-aptitude-reasoning.html">Next: Aptitude, Reasoning →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

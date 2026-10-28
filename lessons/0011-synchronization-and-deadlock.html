@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>11 · Synchronization and Deadlock</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0010-processes-and-scheduling.html">← Processes and Scheduling</a><a href="0012-memory-management.html">Next: Memory Management →</a></nav>
+<h1>11 · Synchronization &amp; Deadlock</h1>
+<p class="sub"><span class="tag">Module C · Operating systems</span><span class="tag">Asked in 2023 and 2025</span> Race conditions, semaphores, producer–consumer, priority inversion, deadlock and Banker's algorithm.</p>
+
+<h2>Start here: why do processes need to coordinate?</h2>
+<p>Several processes or threads often share data. If they touch it at the same moment, the result can be garbage. Imagine two people editing the same bank balance at once: both read ₹100, one adds 50 and the other subtracts 30; whoever writes last overwrites the other's work.</p>
+<div class="def"><p>A <b>race condition</b> is a situation where several processes access and manipulate the same data concurrently and the outcome depends on the particular order in which the accesses happen.</p></div>
+<div class="ex"><div class="label">Worked example: why counter++ is not safe</div>
+<p><code>counter++</code> is really three machine steps: (1) load counter into a register, (2) add 1, (3) store it back. Let counter = 5 and let two threads each run it once. If thread A loads 5, then thread B loads 5, both add 1 to get 6, and both store 6, the final value is <b>6, not 7</b>. One increment was lost.</p></div>
+
+<h2>The critical-section problem</h2>
+<p>The part of code that touches shared data is the <b>critical section</b>. A correct solution must provide: <b>mutual exclusion</b> (only one process inside at a time), <b>progress</b> (if nobody is inside, someone waiting can enter without unreasonable delay) and <b>bounded waiting</b> (no process waits forever).</p>
+
+<h2>Tools for synchronisation</h2>
+<table><tr><th>Tool</th><th>What it is</th></tr>
+<tr><td><b>Mutex lock</b></td><td>A lock with two states. You acquire it before the critical section and release it after. Only the owner releases it.</td></tr>
+<tr><td><b>Spinlock</b></td><td>A lock where a waiting thread loops ("spins") checking the lock. Wastes CPU but avoids a context switch; fine for very short waits.</td></tr>
+<tr><td><b>Semaphore</b></td><td>An integer variable changed only through two atomic operations: <code>wait(S)</code> (also P): if S &gt; 0 decrement it, otherwise block; and <code>signal(S)</code> (also V): increment S and wake a waiter. A <b>binary</b> semaphore (0/1) acts like a mutex; a <b>counting</b> semaphore counts available units of a resource.</td></tr>
+<tr><td><b>Monitor</b></td><td>A language-level construct: a bundle of data and procedures where only one process can be active at a time, with condition variables to wait for events.</td></tr></table>
+
+<h2>Classic problem: producer–consumer (bounded buffer)</h2>
+<p>A producer puts items into a buffer of size N; a consumer takes them out. The producer must wait when the buffer is full; the consumer must wait when it is empty. Three semaphores solve it:</p>
+<pre>mutex = 1      // protects the buffer itself
+empty = N      // number of empty slots
+full  = 0      // number of filled slots
+
+Producer:            Consumer:
+  wait(empty)          wait(full)      // blocks if buffer is empty
+  wait(mutex)          wait(mutex)
+  put item             take item
+  signal(mutex)        signal(mutex)
+  signal(full)         signal(empty)</pre>
+<p>The consumer waits on <code>full</code> when the buffer is empty: this is a case of "wait until a condition becomes true", for which a <b>semaphore</b> is the right primitive (a plain mutex only gives exclusion, it doesn't count items).</p>
+<p>Other classics: <b>readers–writers</b> (many readers may read together, but a writer needs exclusive access) and <b>dining philosophers</b> (five philosophers share five forks; if all pick up the left fork at once, nobody can eat: a deadlock).</p>
+
+<h2>Priority inversion</h2>
+<p>A low-priority task L holds a lock. A high-priority task H needs that lock and must wait. Meanwhile a medium-priority task M (which doesn't need the lock) preempts L. Now H, the most important task, is effectively waiting behind M. This is <b>priority inversion</b>. The <b>priority inheritance protocol</b> fixes it: while L holds the lock that H wants, L temporarily inherits H's priority, so M can't preempt it, L finishes quickly and releases the lock.</p>
+
+<h2>Deadlock</h2>
+<div class="def"><p>A set of processes is <b>deadlocked</b> when each is waiting for a resource that another process in the set holds, so none can ever proceed.</p></div>
+<p>Example: process A holds lock 1 and wants lock 2; process B holds lock 2 and wants lock 1. Both wait forever.</p>
+<div class="box"><p><b>Four necessary conditions</b> (all must hold at once):<br>1. <b>Mutual exclusion</b>: a resource can be used by only one process at a time.<br>2. <b>Hold and wait</b>: a process holds some resources while waiting for others.<br>3. <b>No preemption</b>: resources cannot be forcibly taken away.<br>4. <b>Circular wait</b>: a cycle of processes, each waiting for the next one's resource.<br>Break any one and deadlock is impossible.</p></div>
+<h3>Resource-allocation graph and wait-for graph</h3>
+<p>In a <b>resource-allocation graph</b>, processes are circles and resources are squares. An arrow from a resource to a process means "held by"; from a process to a resource means "requests". A cycle means deadlock if each resource has a single instance. The <b>wait-for graph</b> is a simplified version: remove the resource nodes and draw an arrow Pi → Pj when Pi is waiting for a resource held by Pj. A cycle in the wait-for graph = deadlock.</p>
+<figure><svg viewBox="0 0 560 130" width="560" role="img" aria-label="Resource allocation graph converted to wait-for graph">
+<defs><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="40" cy="60" r="18"/><rect x="130" y="42" width="36" height="36"/><circle cx="260" cy="60" r="18"/><rect x="350" y="42" width="36" height="36" stroke-dasharray="0"/>
+<path marker-end="url(#b)" d="M58 56h72"/><path marker-end="url(#b)" d="M166 60h76"/>
+<circle cx="440" cy="60" r="18"/><circle cx="530" cy="60" r="18"/><path marker-end="url(#b)" d="M458 60h54"/></g>
+<g text-anchor="middle"><text x="40" y="64">P1</text><text x="148" y="66">R1</text><text x="260" y="64">P2</text><text x="98" y="48">wants</text><text x="204" y="48">held by</text><text x="440" y="64">P1</text><text x="530" y="64">P2</text><text x="485" y="48">waits for</text><text x="300" y="115">Left: P1 requests R1, which P2 holds. Right: wait-for graph, P1 → P2.</text></g></svg></figure>
+<h3>Handling deadlock</h3>
+<ul><li><b>Prevention</b>: ensure at least one of the four conditions can never hold (e.g. force a global lock order to avoid circular wait).</li>
+<li><b>Avoidance</b>: grant a request only if the system stays in a safe state (Banker's algorithm).</li>
+<li><b>Detection and recovery</b>: let it happen, find it with a graph algorithm, then abort a process or preempt resources.</li></ul>
+
+<h2>Banker's algorithm and safe states</h2>
+<p>A state is <b>safe</b> if there exists some order in which all processes can run to completion (a <b>safe sequence</b>). Terms: <b>Allocation</b> (held now), <b>Max</b> (the most it will ever need), <b>Need = Max − Allocation</b>, <b>Available</b> (free now).</p>
+<ol class="steps"><li>Set Work = Available.</li><li>Find a process not yet finished whose Need ≤ Work.</li><li>Pretend it runs to completion and returns its resources: Work = Work + its Allocation.</li><li>Repeat. If every process finishes, the state is safe; if you get stuck, it is unsafe.</li></ol>
+<div class="ex"><div class="label">Worked example (2025 question)</div>
+<p>Resources A=10, B=5, C=7. Allocation: P0 (0,1,0), P1 (2,0,0), P2 (3,0,2). Max: P0 (7,5,3), P1 (3,2,2), P2 (9,0,2). Available (5,4,5).</p>
+<ol class="steps"><li>Need: P0 = (7,4,3), P1 = (1,2,2), P2 = (6,0,0).</li><li>Work = (5,4,5). P0's need (7,…) is too big. P1's need (1,2,2) fits. Run P1: Work = (5,4,5) + (2,0,0) = (7,4,5).</li><li>P2 needs (6,0,0) ≤ (7,4,5). Run P2: Work = (7,4,5) + (3,0,2) = (10,4,7).</li><li>P0 needs (7,4,3) ≤ (10,4,7). Run P0: Work = (10,5,7).</li></ol>
+<p>All finished. Safe sequence: <b>P1, P2, P0</b>. The system is in a <b>safe state</b>.</p></div>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q69</div>
+<p class="q">3 processes P0–P2, resource types A (10 instances), B (5), C (7). Allocation P0 010, P1 200, P2 302; Max P0 753, P1 322, P2 902; Available 545. Which is true?</p>
+<button class="opt">The system is not in safe state</button><button class="opt">The system is blocked</button><button class="opt">The system is in safe state</button><button class="opt">The request cannot be granted to all the processes</button>
+<div class="why" hidden>Safe sequence P1, P2, P0 as worked above.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q63</div>
+<p class="q">A situation where several processes access and manipulate the same data concurrently and the outcome depends on the particular order in which access takes place is called</p>
+<button class="opt">Stack overflow</button><button class="opt">Aging</button><button class="opt">Race condition</button><button class="opt">Buffer overflow</button>
+<div class="why" hidden>Definition of a race condition. Aging is a starvation fix for scheduling.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q53</div>
+<p class="q">In a producer-consumer scenario (bounded-buffer problem), what would be the most appropriate synchronization primitive to ensure that the consumer waits when the buffer is empty?</p>
+<button class="opt">Spinlock</button><button class="opt">Mutex lock</button><button class="opt">Semaphore</button><button class="opt">Monitors</button>
+<div class="why" hidden>A counting semaphore (<code>full</code>) makes the consumer block until an item exists. (A monitor with a condition variable could do it too, but among these, the semaphore is the standard answer.)</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q49</div>
+<p class="q">Purpose of the priority inheritance protocol in synchronization mechanisms is</p>
+<button class="opt">To prevent priority inversion in systems having two or lesser priorities for a resource</button><button class="opt">To provide mutual exclusion between threads and prevent data corruption</button><button class="opt">To prevent priority inversion and ensure fairness in resource allocation</button><button class="opt">To allow multiple threads to access any resource simultaneously</button>
+<div class="why" hidden>It is about priority inversion. Option 1 can't be right: inversion needs at least three priority levels (low, medium, high). Option 2 describes mutexes. Option 3 is the best match among those given.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">Practice (ISRO 2025 Q66 style, written by me)</div>
+<p class="q">A resource-allocation graph shows: P1 holds R1 and requests R2; P2 holds R2 and requests R1; each resource has one instance. The corresponding wait-for graph is</p>
+<button class="opt">P1 → P2 only</button><button class="opt">P1 → P2 and P2 → P1 (a cycle)</button><button class="opt">P2 → P1 only</button><button class="opt">No edges</button>
+<div class="why" hidden>P1 waits for R2, held by P2: edge P1 → P2. P2 waits for R1, held by P1: edge P2 → P1. A cycle means deadlock.</div></div>
+
+<div class="foot">Primary source: Silberschatz, Galvin, Gagne, chapters 6–8. <a href="0012-memory-management.html">Next: Memory Management →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

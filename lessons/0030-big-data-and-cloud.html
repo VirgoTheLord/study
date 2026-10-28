@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>30 · Big Data, Cloud and Virtualization</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0029-ai-and-machine-learning.html">← AI and ML</a><a href="0031-software-engineering.html">Next: Software Engineering →</a></nav>
+<h1>30 · Big Data, Cloud Computing &amp; Virtualization</h1>
+<p class="sub"><span class="tag">Module I · AI and data</span><span class="tag">Asked in 2023 and 2025</span> Mostly vocabulary: learn each term once and the marks are easy.</p>
+
+<h2>Big Data</h2>
+<p><b>Big Data</b> means datasets so large, fast or varied that ordinary single-machine databases can't handle them. They are described by the "Vs":</p>
+<table><tr><th>V</th><th>Meaning</th></tr><tr><td><b>Volume</b></td><td>How much data</td></tr><tr><td><b>Velocity</b></td><td>How fast it arrives and must be processed</td></tr><tr><td><b>Variety</b></td><td>Many formats: tables, text, images, video</td></tr><tr><td><b>Veracity</b></td><td>How trustworthy/clean it is</td></tr><tr><td><b>Value</b></td><td>Usefulness of what you extract</td></tr></table>
+<p>"Visualisation" is <b>not</b> one of the Vs (it is a way of presenting results).</p>
+<h3>Types of data</h3>
+<table><tr><th>Type</th><th>Meaning</th><th>Examples</th></tr><tr><td>Structured</td><td>Fixed format, fits rows and columns</td><td>Relational tables</td></tr><tr><td>Semi-structured</td><td>Has tags/keys but flexible shape</td><td>XML, JSON</td></tr><tr><td>Unstructured</td><td>No predefined format</td><td>Text files, images, videos</td></tr></table>
+<h3>Hadoop, HDFS and friends</h3>
+<ul><li><b>Hadoop</b> is a framework for storing and processing big data across clusters of ordinary machines.</li>
+<li><b>HDFS (Hadoop Distributed File System)</b>: its primary purpose is to <b>store very large files across multiple machines</b>. Files are split into big blocks, spread over many <b>DataNodes</b> and copied (replicated) for fault tolerance; a <b>NameNode</b> keeps the directory of where blocks are. It is built for <b>write-once, read-many</b> access and <b>high throughput</b>, accepting <b>high latency</b>. So HDFS is a poor fit for: many simultaneous writes to the same file, many small files, or applications needing <b>low-latency</b> access.</li>
+<li><b>MapReduce</b>: batch processing in two steps: <i>map</i> (process pieces in parallel) then <i>reduce</i> (combine results).</li>
+<li><b>Stream processing</b> (continuous, real-time): <b>Apache Flink</b>, Spark Streaming, Storm, Kafka. Hadoop itself is batch. <b>Splunk</b> analyses machine/log data. <b>ERDPlus</b> is just a tool for drawing ER diagrams.</li>
+<li><b>NoSQL databases</b> store unstructured and semi-structured data and scale out (see lesson 21). <b>Cassandra</b> is a distributed NoSQL store. An <b>in-memory database</b> keeps data in RAM for speed.</li></ul>
+
+<h2>Cloud computing</h2>
+<p><b>Cloud computing</b> means renting computing resources (servers, storage, software) over the Internet on demand and paying for what you use, instead of owning hardware.</p>
+<table><tr><th>Service model</th><th>You get…</th><th>Example</th></tr><tr><td><b>IaaS</b> (Infrastructure)</td><td>Virtual machines, storage, networks</td><td>Amazon EC2</td></tr><tr><td><b>PaaS</b> (Platform)</td><td>A ready runtime to deploy your code</td><td>Google App Engine</td></tr><tr><td><b>SaaS</b> (Software)</td><td>A finished application</td><td>Gmail, Office 365</td></tr></table>
+<table><tr><th>Deployment model</th><th>Meaning</th></tr><tr><td><b>Public</b></td><td>Owned by a provider, shared by many customers over the Internet</td></tr><tr><td><b>Private</b></td><td>Used by a <b>single organisation</b>, within its own premises (or dedicated)</td></tr><tr><td><b>Hybrid</b></td><td>A mix of private and public clouds</td></tr><tr><td>Community</td><td>Shared by organisations with common concerns</td></tr></table>
+<ul><li><b>Elasticity</b>: the ability to <b>scale resources up and down</b> automatically as demand changes. (Scalability is the ability to grow; elasticity is growing <i>and shrinking</i> on demand.)</li>
+<li><b>Cloud bursting</b>: when load spikes beyond what a private cloud can handle, temporarily <b>renting extra capacity</b> from a public cloud.</li></ul>
+
+<h2>Virtualization</h2>
+<p><b>Virtualization</b> lets one physical machine run several <b>virtual machines (VMs)</b>, each with its own operating system, as if they were separate computers. The software that creates and manages them is the <b>hypervisor</b> (virtual machine monitor).</p>
+<figure><svg viewBox="0 0 620 150" width="620" role="img" aria-label="Type 1 and Type 2 hypervisor stacks">
+<g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="10" y="20" width="270" height="30"/><rect x="10" y="50" width="270" height="30"/><rect x="10" y="80" width="270" height="30"/><rect x="340" y="20" width="270" height="30"/><rect x="340" y="50" width="270" height="30"/><rect x="340" y="80" width="270" height="30"/><rect x="340" y="110" width="270" height="30"/></g>
+<g text-anchor="middle"><text x="145" y="40">Guest VMs</text><text x="145" y="70" font-weight="bold">Hypervisor (Type 1: bare metal)</text><text x="145" y="100">Physical hardware</text>
+<text x="475" y="40">Guest VMs</text><text x="475" y="70" font-weight="bold">Hypervisor (Type 2: hosted)</text><text x="475" y="100">Host operating system</text><text x="475" y="130">Physical hardware</text></g></svg>
+<figcaption>Type 1 (Xen, VMware ESXi, KVM) runs directly on the hardware. Type 2 (VirtualBox, VMware Workstation) runs as a program on top of a host OS.</figcaption></figure>
+<ul><li><b>Full virtualization</b>: the guest OS runs unmodified, believing it has real hardware.</li>
+<li><b>Para-virtualization</b>: the guest OS is <b>modified</b> to cooperate with the hypervisor (faster, but needs a changed OS).</li>
+<li><b>Dual boot</b> is different: two OSs installed on the same machine, but you boot only <b>one at a time</b>. Virtualization lets multiple OSs run <b>simultaneously</b>.</li>
+<li><b>Containers</b> (Docker) share the host's kernel and are lighter than full VMs.</li>
+<li><b>JMX (Java Management Extensions)</b> is the standard Java API for monitoring and managing applications.</li></ul>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q22</div>
+<p class="q">With respect to hypervisors: (P) Runs on host machine physical hardware, (Q) Hosted hypervisor, (R) Runs on the operating system of physical host machine, (S) Bare metal hypervisor. Which is the correct match?</p>
+<button class="opt">Type-1: P and Q; Type-2: R and S</button><button class="opt">Type-1: P and S; Type-2: Q and R</button><button class="opt">Type-1: R and S; Type-2: P and Q</button><button class="opt">Type-1: R and Q; Type-2: P and S</button>
+<div class="why" hidden>Type 1 = bare metal, on the hardware (P, S). Type 2 = hosted, on an OS (Q, R).</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q24</div>
+<p class="q">What is the primary purpose of Hadoop Distributed File System (HDFS) in Big Data storage?</p>
+<button class="opt">To compress files</button><button class="opt">To store in-memory data</button><button class="opt">To store relational data</button><button class="opt">To store large files across multiple machines</button>
+<div class="why" hidden>That is exactly what HDFS is for.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q23</div>
+<p class="q">Which of the following is not a characteristic of Big Data?</p>
+<button class="opt">Velocity</button><button class="opt">Visualisation</button><button class="opt">Volume</button><button class="opt">Variety</button>
+<div class="why" hidden>Volume, Velocity, Variety (and Veracity, Value).</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q25</div>
+<p class="q">Which of the following is a Big Data tool employed for real-time stream processing?</p>
+<button class="opt">Hadoop</button><button class="opt">Apache Flink</button><button class="opt">Splunk</button><button class="opt">ERDPlus</button>
+<div class="why" hidden>Flink is a stream processor. Hadoop is batch-oriented.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q26 and Q27</div>
+<p class="q">Which is used for storing unstructured data in a Big Data environment, and how do you match structured / semi-structured / unstructured with (Q) fixed format, (R) XML, JSON, (P) text, images, video?</p>
+<button class="opt">SQL database; structured–P, semi–Q, unstructured–R</button><button class="opt">Relational database; structured–R, semi–Q, unstructured–P</button><button class="opt">NoSQL database; structured–Q, semi–R, unstructured–P</button><button class="opt">In-memory database; structured–Q, semi–P, unstructured–R</button>
+<div class="why" hidden>NoSQL stores unstructured data. Structured = fixed format (Q); semi-structured = XML/JSON (R); unstructured = text, images, video (P).</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q63</div>
+<p class="q">Which scenario may not be a good fit for HDFS?</p>
+<button class="opt">Applications that need low-latency data access</button><button class="opt">Applications storing huge files read in bulk</button><button class="opt">Batch analytics over large datasets</button><button class="opt">Archiving large volumes of log data</button>
+<div class="why" hidden>Practice version. HDFS favours throughput over latency, so low-latency access (and multiple simultaneous writers to one file) is where it fits poorly. The 2023 paper's wording was hard to read in the extracted text, so I phrased this check myself.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2025 · Q21</div>
+<p class="q">What does "elasticity" in cloud computing refer to?</p>
+<button class="opt">Ability to scale up and scale down compute resources</button><button class="opt">Parallel execution of jobs</button><button class="opt">High availability of systems</button><button class="opt">Minimum response time</button>
+<div class="why" hidden>Elasticity = scale out and in automatically with demand.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q67 / Q68 / Q70</div>
+<p class="q">(a) The cloud infrastructure solely for a single organisation within its premises; (b) temporarily renting capacity to handle load spikes; (c) the technique where the hypervisor modifies the guest OS. In order, these are:</p>
+<button class="opt">public cloud; cloud sharing; full virtualization</button><button class="opt">hybrid cloud; cloud loading; para virtualization</button><button class="opt">private cloud; cloud bursting; para virtualization</button><button class="opt">private cloud; cloud computing; full virtualization</button>
+<div class="why" hidden>Private cloud; cloud bursting; para-virtualization.</div></div>
+
+<div class="foot">Primary source: Apache Hadoop documentation (HDFS architecture), NIST SP 800-145 (cloud definition). <a href="0031-software-engineering.html">Next: Software Engineering →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

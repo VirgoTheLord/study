@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>15 · IP Addressing and Subnetting</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0014-data-link-layer.html">← Data Link Layer</a><a href="0016-transport-layer.html">Next: Transport Layer →</a></nav>
+<h1>15 · IP Addressing, Subnetting &amp; ICMP</h1>
+<p class="sub"><span class="tag">Module D · Computer networks</span><span class="tag">Asked in 2025</span> Reading an IP address, masks, subnets, and when you need a router.</p>
+
+<h2>Start here</h2>
+<p>An <b>IPv4 address</b> is a 32-bit number, written as four decimal bytes: <code>192.168.1.10</code>. It has two parts: a <b>network part</b> (which network?) and a <b>host part</b> (which device on it?). A <b>subnet mask</b> tells you where the split is: the mask has 1s over the network part and 0s over the host part.</p>
+<div class="def"><p><code>255.255.255.0</code> = 11111111.11111111.11111111.00000000 = <b>/24</b> (24 ones). The first 24 bits are the network, the last 8 are the host. "/24" is called the <b>prefix length</b> (CIDR notation).</p></div>
+
+<h2>Address classes (old scheme)</h2>
+<table><tr><th>Class</th><th>First byte</th><th>Default mask</th><th>Use</th></tr>
+<tr><td>A</td><td>1–126</td><td>/8 (255.0.0.0)</td><td>Huge networks</td></tr><tr><td>B</td><td>128–191</td><td>/16</td><td>Medium</td></tr><tr><td>C</td><td>192–223</td><td>/24</td><td>Small</td></tr><tr><td>D</td><td>224–239</td><td>—</td><td>Multicast</td></tr><tr><td>E</td><td>240–255</td><td>—</td><td>Reserved</td></tr></table>
+<p><b>Private ranges</b> (not routed on the public Internet, free for anyone to use inside their own network): 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16. So 10.0.0.x addresses <b>do not</b> have to be allocated by IANA and can be used by hosts. <code>127.x.x.x</code> is loopback.</p>
+<p>Modern networks use <b>CIDR</b> (classless): any prefix length is allowed with any address. A mask like /26 can be applied to a class A address with no problem.</p>
+
+<h2>Subnetting step by step</h2>
+<p>Take the mask and find its <b>block size</b> in the interesting byte: block size = 256 − (mask byte). Networks start at multiples of the block size.</p>
+<div class="ex"><div class="label">Worked example: mask 255.255.255.192 (/26)</div>
+<ol class="steps"><li>The last byte of the mask is 192, so block size = 256 − 192 = <b>64</b>.</li><li>Subnets (last byte): 0–63, 64–127, 128–191, 192–255.</li><li>In each subnet the first address (e.g. .64) is the <b>network address</b> and the last (e.g. .127) is the <b>broadcast address</b>. Neither can be given to a host. Usable hosts = 64 − 2 = <b>62</b>. In general a block of size 2ʰ holds 2ʰ − 2 hosts.</li></ol></div>
+<h3>Are two hosts on the same subnet?</h3>
+<p>Two hosts are on the same subnet exactly when their addresses fall in the same block (equivalently, (IP AND mask) is equal). Hosts in <b>different</b> subnets need a <b>router</b> to talk to each other.</p>
+<div class="ex"><div class="label">Worked example (2025 question)</div>
+<p>A = 10.0.0.126, B = 10.0.0.131, mask 255.255.255.192. Blocks: 0–63, 64–127, 128–191. A's last byte 126 is in 64–127. B's 131 is in 128–191. Different subnets, so <b>a router is required</b>.</p></div>
+<div class="ex"><div class="label">Worked example: how many subnets and hosts?</div>
+<p>You have 192.168.10.0/24 and need 4 subnets. 4 = 2², so borrow 2 bits from the host part: new prefix /26. Each subnet has 2⁶ = 64 addresses, 62 usable.</p></div>
+
+<h2>Other things at the network layer</h2>
+<ul><li><b>ICMP</b> (Internet Control Message Protocol): carries error and control messages (destination unreachable, time exceeded, echo request/reply used by <code>ping</code> and <code>traceroute</code>). A "fragmentation needed" ICMP message is how a sender learns the <b>path MTU</b> (the largest packet that fits through every link), which is called <b>Path MTU discovery</b>. If a firewall blocks all incoming ICMP, path MTU discovery fails. TCP slow start and congestion control still work (they are driven by TCP acknowledgements, not ICMP).</li>
+<li><b>NAT</b>: lets many private addresses share one public address; also hides the internal addresses.</li>
+<li><b>Routing</b>: routers keep tables saying "for destination network X, send to next hop Y." <b>Distance-vector</b> routing (RIP) shares distance tables with neighbours; <b>link-state</b> routing (OSPF) floods the whole map and each router runs Dijkstra.</li>
+<li><b>IPv6</b>: 128-bit addresses (written in hex, e.g. 2001:db8::1), created because IPv4 ran out of addresses.</li></ul>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q41</div>
+<p class="q">Computer A is assigned IP address 10.0.0.126 and computer B 10.0.0.131. Network mask is 255.255.255.192 in both cases. Which of the following statements is true?</p>
+<button class="opt">10.0.0.x addresses have to be allocated by IANA and cannot be used by hosts</button><button class="opt">The given network mask cannot be assigned to class A IP addresses</button><button class="opt">A router will be required to communicate between A and B</button><button class="opt">Computer A and B form part of a multicast group</button>
+<div class="why" hidden>Different subnets (64–127 vs 128–191). 10.x is a private range; masks are not tied to class; multicast uses class D.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q39</div>
+<p class="q">Suppose the host firewall of a computer is configured to block all incoming ICMP packets. What could be its effect on the function of the TCP/IP protocol stack of the host?</p>
+<button class="opt">No effect</button><button class="opt">Path MTU discovery fails</button><button class="opt">Slow start fails</button><button class="opt">Congestion control fails</button>
+<div class="why" hidden>Path MTU discovery depends on ICMP messages. Slow start and congestion control use TCP ACKs.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">Practice (written by me)</div>
+<p class="q">How many usable host addresses are there in a /27 subnet?</p>
+<button class="opt">32</button><button class="opt">30</button><button class="opt">28</button><button class="opt">62</button>
+<div class="why" hidden>/27 leaves 32 − 27 = 5 host bits: 2⁵ = 32 addresses, minus network and broadcast = 30.</div></div>
+
+<div class="foot">Primary source: Kurose &amp; Ross, chapter 4. <a href="0016-transport-layer.html">Next: Transport Layer →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

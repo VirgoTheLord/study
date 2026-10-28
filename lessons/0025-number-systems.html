@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>25 · Number Systems and Computer Arithmetic</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0024-sequential-circuits.html">← Sequential</a><a href="0026-computer-organization.html">Next: Computer Organization →</a></nav>
+<h1>25 · Number Systems &amp; Computer Arithmetic</h1>
+<p class="sub"><span class="tag">Module G · Digital logic</span><span class="tag">Asked in 2025</span> Binary, octal, hex, fractions, negative numbers, 2's complement.</p>
+
+<h2>Start here</h2>
+<p>We count in <b>base 10</b>: each position is worth 10 times the one to its right. Computers use <b>base 2 (binary)</b>: each position is worth 2 times the one to its right. Position values from the right: 1, 2, 4, 8, 16, 32, 64, 128…</p>
+<div class="ex"><div class="label">Binary → decimal</div>
+<p>1101₂ = 1×8 + 1×4 + 0×2 + 1×1 = 13.</p></div>
+<div class="ex"><div class="label">Decimal → binary (divide by 2, read remainders upward)</div>
+<p>13 ÷ 2 = 6 r <b>1</b>; 6 ÷ 2 = 3 r <b>0</b>; 3 ÷ 2 = 1 r <b>1</b>; 1 ÷ 2 = 0 r <b>1</b>. Read bottom to top: 1101.</p></div>
+<h3>Octal and hexadecimal</h3>
+<p>Group bits to shorten them. <b>Octal</b> (base 8): 3 bits per digit. <b>Hexadecimal</b> (base 16): 4 bits per digit, using 0–9 then A=10, B=11, C=12, D=13, E=14, F=15. Example: 1011 1110₂ = B E = 0xBE = 190.</p>
+
+<h2>Fractions</h2>
+<p>After the binary point the position values are ½, ¼, ⅛, 1/16, 1/32…</p>
+<div class="ex"><div class="label">Worked example (2025 question)</div>
+<p>(0.11101)₂ = ½ + ¼ + ⅛ + 0/16 + 1/32 = 0.5 + 0.25 + 0.125 + 0.03125 = <b>0.90625</b>. In the form 0.90xy5, the digits after 0.90 are 6, 2, 5, so x = 6, y = 2.</p></div>
+<p>Decimal fraction → binary: multiply the fraction by 2 repeatedly and record the integer part each time. 0.625 × 2 = 1.25 (1); 0.25 × 2 = 0.5 (0); 0.5 × 2 = 1.0 (1). So 0.625 = 0.101₂.</p>
+
+<h2>Negative numbers: two's complement</h2>
+<p>Computers need a way to store negative numbers using the same adder circuits. The standard is <b>two's complement</b> with a fixed number of bits n:</p>
+<ul><li>The leftmost bit is the sign (0 = positive, 1 = negative).</li>
+<li>To get −x: <b>invert all bits of x, then add 1</b>.</li>
+<li>Range with n bits: <b>−2ⁿ⁻¹ to +2ⁿ⁻¹ − 1</b> (8 bits: −128 to +127).</li>
+<li>Subtraction becomes addition: A − B = A + (two's complement of B).</li></ul>
+<div class="ex"><div class="label">Worked example: what is 11111010?</div>
+<p>The leading 1 says it is negative. Invert: 00000101. Add 1: 00000110 = 6. So 11111010 = <b>−6</b>.</p></div>
+<div class="ex"><div class="label">Worked example (2025 question): the product of A = 11111010 and B = 00001010 in 2's complement</div>
+<ol class="steps"><li>A = −6 (shown above). B = 00001010 = 10.</li><li>Product = −60.</li><li>Write 60 in 8 bits: 00111100. Invert: 11000011. Add 1: <b>11000100</b>.</li></ol>
+<p>(Check: 11000100 negative; invert 00111011, add 1 → 00111100 = 60, so it is −60 ✓.)</p></div>
+<h3>Other representations</h3>
+<ul><li><b>Sign-magnitude</b>: first bit is the sign, the rest is the size (has both +0 and −0).</li>
+<li><b>One's complement</b>: invert all bits (also has two zeros).</li>
+<li><b>Overflow</b> in two's complement addition happens when two numbers of the same sign give a result of the opposite sign.</li>
+<li><b>Floating point (IEEE 754)</b>: a number is stored as sign, exponent and mantissa. Single precision: 1 + 8 + 23 = 32 bits; double: 1 + 11 + 52 = 64 bits.</li></ul>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q49</div>
+<p class="q">If x and y are two decimal digits such that (0.11101)₂ = (0.90xy5)₁₀, what are the values of x and y?</p>
+<button class="opt">x = 2, y = 6</button><button class="opt">x = 6, y = 2</button><button class="opt">x = 9, y = 8</button><button class="opt">None of the above</button>
+<div class="why" hidden>0.11101₂ = 0.90625 so x = 6, y = 2.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q51</div>
+<p class="q">Let A = (11111010)₂ and B = (00001010)₂ represent numbers in 2's complement stored as 1 byte. The product of A and B in 2's complement is</p>
+<button class="opt">(1001 1100)₂</button><button class="opt">(1010 0101)₂</button><button class="opt">(1100 0100)₂</button><button class="opt">(1101 0101)₂</button>
+<div class="why" hidden>(−6) × 10 = −60 = 1100 0100.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">Practice (written by me)</div>
+<p class="q">What is the range of numbers that can be stored in 8-bit two's complement?</p>
+<button class="opt">0 to 255</button><button class="opt">−128 to +127</button><button class="opt">−127 to +127</button><button class="opt">−256 to +255</button>
+<div class="why" hidden>−2⁷ to 2⁷ − 1.</div></div>
+
+<div class="foot">Primary source: Morris Mano, <i>Digital Design</i>, chapter 1; Hamacher, <i>Computer Organization</i>, chapter 6. <a href="0026-computer-organization.html">Next: Computer Organization →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>6 · Finite Automata and Regular Expressions</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0005-graph-algorithms.html">← Graph Algorithms</a><a href="0007-grammars-and-language-classes.html">Next: Grammars and Language Classes →</a></nav>
+<h1>6 · Finite Automata &amp; Regular Expressions</h1>
+<p class="sub"><span class="tag">Module B · Theory of computation</span><span class="tag">Asked in 2023 and 2025</span> Machines that read strings, and the patterns they accept.</p>
+
+<h2>Start here: what are we even doing?</h2>
+<p>An <b>alphabet</b> (Σ) is a set of symbols, e.g. {a, b} or {0, 1}. A <b>string</b> is a sequence of symbols (<code>abba</code>). A <b>language</b> is a set of strings, e.g. "all strings that end in b". The central question of this subject: <i>what kinds of languages can a machine recognise, and how powerful must the machine be?</i></p>
+<p>The simplest machine is a <b>finite automaton</b>: a tiny machine with a fixed number of states and no memory other than "which state am I in." It reads the string one symbol at a time, hopping between states, and at the end says yes (accept) or no (reject).</p>
+
+<h2>DFA: the deterministic finite automaton</h2>
+<div class="def"><p>A DFA has: a finite set of <b>states</b>, a <b>start state</b> (drawn with a small incoming arrow), some <b>final (accepting) states</b> (drawn as double circles), and a <b>transition</b> for every (state, symbol) pair. "Deterministic" means exactly one move is possible each time.</p></div>
+<figure><svg viewBox="0 0 440 130" width="440" role="img" aria-label="DFA accepting strings with an even number of a">
+<defs><marker id="m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="120" cy="60" r="26"/><circle cx="120" cy="60" r="21"/><circle cx="320" cy="60" r="26"/>
+<path marker-end="url(#m)" d="M30 60h64"/><path marker-end="url(#m)" d="M146 48q74-40 148 0"/><path marker-end="url(#m)" d="M294 72q-74 40-148 0"/>
+<path marker-end="url(#m)" d="M105 38q-20-40 0-10"/><path marker-end="url(#m)" d="M335 38q20-40 0-10"/></g>
+<g text-anchor="middle"><text x="120" y="64">E</text><text x="320" y="64">O</text><text x="220" y="30">a</text><text x="220" y="108">a</text><text x="88" y="16">b</text><text x="352" y="16">b</text></g></svg>
+<figcaption>Accepts strings with an <b>even number of a's</b>. State E = even so far (final), O = odd so far. An a flips the state; a b keeps it.</figcaption></figure>
+<div class="ex"><div class="label">Trace it</div>
+<p>Input <code>abab</code>: start E → (a) O → (b) O → (a) E → (b) E. It ends in the final state E: accepted (two a's, an even number). Input <code>aba</code>: E → O → O → E: accepted (two a's). Input <code>ab</code>: E → O → O: ends in O, so rejected (one a).</p></div>
+<h3>How to design one</h3>
+<p>Ask: "what do I need to remember about what I've read so far?" Each answer becomes a state. For "ends in b" you need to remember only whether the last symbol was b. For "even number of a's" you remember parity. For "contains ab" you remember how far you are into matching "ab".</p>
+
+<h2>NFA: the non-deterministic version</h2>
+<p>An <b>NFA</b> may have several moves for the same symbol (or none), and may have <b>ε-transitions</b> (moves that consume no input). It accepts if <i>some</i> path leads to a final state. NFAs look easier to design but are <b>no more powerful</b>: every NFA can be converted to a DFA that accepts the same language.</p>
+<h3>Converting an NFA to a DFA (subset construction)</h3>
+<p>Each DFA state is a <i>set</i> of NFA states ("where might the NFA be right now?"). An NFA with n states can need up to 2ⁿ DFA states.</p>
+<div class="ex"><div class="label">Worked example: strings ending in ab</div>
+<p>NFA: q0 loops on a and b; q0 –a→ q1; q1 –b→ q2 (final). Build the DFA:</p>
+<ol class="steps"><li>Start: {q0}. On a: q0 can stay at q0 or go to q1 → {q0,q1}. On b: {q0}.</li>
+<li>{q0,q1}: on a → {q0,q1}. On b → q0 stays, q1 goes to q2 → {q0,q2}.</li>
+<li>{q0,q2}: on a → {q0,q1}. On b → {q0}.</li>
+<li>Final DFA states are those containing q2: {q0,q2}. So the DFA has 3 states.</li></ol></div>
+
+<h2>Minimising a DFA</h2>
+<p>Two states are <b>equivalent</b> if they behave identically from now on. Merge equivalent states to get the smallest DFA.</p>
+<ol class="steps"><li>Delete unreachable states.</li><li>Split states into two groups: final and non-final.</li><li>Look at each group: if two states in it send some symbol to <i>different</i> groups, split them apart. Repeat until no group can be split.</li><li>Each remaining group becomes one state.</li></ol>
+<div class="ex"><div class="label">Worked example</div>
+<p>States 1,2,3,4; finals {3,4}. On a: every state goes to 2. On b: 1→3, 2→4, 3→3, 4→4. Groups: {1,2} (non-final), {3,4} (final). Check 1 vs 2: on a both go to 2 (group {1,2}); on b they go to 3 and 4 (both in group {3,4}). Same → equivalent. Check 3 vs 4 similarly: equivalent. Minimal DFA = <b>2 states</b>. (The language is "ends in b".)</p></div>
+
+<h2>Regular expressions</h2>
+<p>A <b>regular expression</b> is a compact pattern that describes a language. Building blocks:</p>
+<table><tr><th>Pattern</th><th>Meaning</th></tr>
+<tr><td><code>a</code></td><td>The single string "a"</td></tr>
+<tr><td><code>r + s</code> (or <code>r | s</code>)</td><td>Either r or s</td></tr>
+<tr><td><code>r s</code></td><td>r followed by s</td></tr>
+<tr><td><code>r*</code></td><td>Zero or more repetitions of r</td></tr>
+<tr><td><code>r+</code> (in programming regex)</td><td>One or more repetitions</td></tr>
+<tr><td><code>[0-9]</code></td><td>Any one character in the set</td></tr></table>
+<p><b>Regular languages</b> are exactly the languages accepted by DFAs, by NFAs, and described by regular expressions. Examples:</p>
+<ul><li>Strings that end in b: <code>(a+b)*b</code>. Start with a: <code>a(a+b)*</code>. Contain "ab": <code>(a+b)*ab(a+b)*</code>.</li>
+<li>An <b>identifier</b> (variable name): <code>letter (letter | digit)*</code>. It must start with a letter, then anything.</li>
+<li>A hex constant: <code>0x[0-9A-F]+</code> means the characters 0x followed by one or more hex digits (uppercase letters only!).</li></ul>
+<div class="box"><p><b>Identities worth knowing:</b> <code>(a*)* = a*</code> &nbsp; <code>a*a* = a*</code> &nbsp; <code>(a+b)* = (a*b*)* = (a*+b*)*</code> &nbsp; <code>ε + aa* = a*</code> &nbsp; <code>(a*b)* + (b*a)* = (a+b)*</code></p></div>
+<div class="ex"><div class="label">Why (a*b)* + (b*a)* = (a+b)*</div>
+<p>(a*b)* produces ε or any string whose last symbol is b. (b*a)* produces ε or any string whose last symbol is a. Any non-empty string over {a,b} ends in a or b, and the empty string is in both. So together they give every string, which is (a+b)*.</p></div>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q78</div>
+<p class="q">Consider the regular expression R over the alphabet {a, b}: (a*b)* + (b*a)*. Which of the following describes the same language as R?</p>
+<button class="opt">(a*b*)(b*a*)</button><button class="opt">a*b*</button><button class="opt">(a+b)*</button><button class="opt">a*b* + b*a*</button>
+<div class="why" hidden><b>(a+b)*</b>: see the explanation above. The other options cannot produce strings like "abab" (a*b* + b*a* only allows at most one switch between a's and b's).</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2025 · Q28</div>
+<p class="q">Which of the following hexadecimal constants match the regular expression (0x[0-9A-F]+)?</p>
+<button class="opt">0x4C5</button><button class="opt">0x50b</button><button class="opt">04A</button><button class="opt">0x</button>
+<div class="why" hidden>0x4C5: starts with 0x, then digits 4, C, 5 all in [0-9A-F] ✓. 0x50b has a lowercase b, not in the set. 04A has no "x". "0x" has no digit after it, but + needs at least one.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q7</div>
+<p class="q">An NFA with ε-transitions is meant to accept strings corresponding to a lexical token <i>id</i> (an identifier), with tokens letter = [a-zA-Z] and digit = [0-9]. Which extended regular expression corresponds to the token id?</p>
+<button class="opt">letter (letter | digit)*</button><button class="opt">(letter | digit)* letter</button><button class="opt">(letter | digit)*</button><button class="opt">letter (letter* | digit*)</button>
+<div class="why" hidden>An identifier starts with a letter and continues with any mix of letters and digits. The last option is wrong because (letter* | digit*) cannot mix: it would reject "a1b".</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">Practice (ISRO 2025 Q79 style, written by me)</div>
+<p class="q">A DFA has states 1–4, final states {3,4}, and transitions: on a every state goes to state 2; on b: 1→3, 2→4, 3→3, 4→4. The number of states in the minimal DFA for its language is</p>
+<button class="opt">1</button><button class="opt">2</button><button class="opt">3</button><button class="opt">4</button>
+<div class="why" hidden>States 1 and 2 are equivalent, and 3 and 4 are equivalent (worked above). Minimal DFA has 2 states.</div></div>
+
+<div class="foot">Primary source: Sipser, <i>Introduction to the Theory of Computation</i>, chapter 1. Questions that show a DFA/NFA as a picture: trace what the machine must have read to reach a final state, then write that as a pattern. <a href="0007-grammars-and-language-classes.html">Next: Grammars and Language Classes →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

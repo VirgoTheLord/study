@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2 · Sorting</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0001-big-o-and-growth-rates.html">← Big-O</a><a href="0003-trees-and-heaps.html">Next: Trees and Heaps →</a></nav>
+<h1>2 · Sorting</h1>
+<p class="sub"><span class="tag">Module A · Algorithms</span><span class="tag">Asked in 2023 and 2025</span> How each sorting method works, and how to recognise one from a partly sorted array.</p>
+
+<h2>Start here</h2>
+<p>Sorting means arranging items in order. There are many methods, and the exam asks two things: (1) <b>how fast is it</b> in best, average and worst case, and (2) <b>given an array after a few steps, which method was used</b>. To answer (2) you must know exactly what one step of each method does. We will use one array throughout: <code>[10, 5, 16, 2, 8, 9]</code>.</p>
+
+<h2>The three slow, simple methods (O(n²))</h2>
+<h3>Bubble sort: swap neighbours that are out of order</h3>
+<p>Walk through the array comparing each pair of neighbours; swap if the left one is bigger. After one full pass the <b>largest element has "bubbled" to the end</b>. Repeat for the rest.</p>
+<table><tr><th>Pass</th><th>Array after the pass</th></tr><tr><td>start</td><td>10 5 16 2 8 9</td></tr><tr><td>1</td><td>5 10 2 8 9 <b>16</b></td></tr><tr><td>2</td><td>5 2 8 9 <b>10 16</b></td></tr><tr><td>3</td><td>2 5 8 <b>9 10 16</b></td></tr></table>
+<p>Telltale sign: after k passes, the <b>last k places</b> hold the k largest values in order.</p>
+
+<h3>Selection sort: pick the smallest, put it at the front</h3>
+<p>Find the minimum of the whole array and swap it into position 1. Then find the minimum of the rest and swap it into position 2, and so on.</p>
+<table><tr><th>Pass</th><th>Array</th></tr><tr><td>start</td><td>10 5 16 2 8 9</td></tr><tr><td>1 (swap 10 and 2)</td><td><b>2</b> 5 16 10 8 9</td></tr><tr><td>2 (5 already in place)</td><td><b>2 5</b> 16 10 8 9</td></tr><tr><td>3 (swap 16 and 8)</td><td><b>2 5 8</b> 10 16 9</td></tr></table>
+<p>Telltale sign: after k passes, the <b>first k places</b> hold the k smallest values, and the rest look scrambled because of the swaps.</p>
+
+<h3>Insertion sort: how you sort playing cards</h3>
+<p>Keep the left part sorted. Take the next element and slide it left into its correct place within the sorted part.</p>
+<table><tr><th>Step</th><th>Array (sorted part in bold)</th></tr><tr><td>start</td><td><b>10</b> 5 16 2 8 9</td></tr><tr><td>1: insert 5</td><td><b>5 10</b> 16 2 8 9</td></tr><tr><td>2: insert 16</td><td><b>5 10 16</b> 2 8 9</td></tr><tr><td>3: insert 2</td><td><b>2 5 10 16</b> 8 9</td></tr></table>
+<p>Telltale sign: after k steps, the first k+1 elements are sorted among themselves, and the <b>rest of the array is untouched</b>, exactly as in the input.</p>
+<div class="ex"><div class="label">Identify the sort (this is a 2025 question)</div>
+<p>Input <code>{10, 5, 16, 2, 8, 9}</code> gives <code>{2, 5, 10, 16, 8, 9}</code> after three iterations. Check each method against the tables above: after 3 bubble passes we would have the 3 largest at the end (not true). After 3 selection passes we would have 2 5 8 at the front (not true). After 3 insertion steps, the first four are sorted and <code>8 9</code> are untouched: <code>2 5 10 16 | 8 9</code> ✓. <b>Insertion sort.</b></p></div>
+
+<h2>The fast methods (O(n log n))</h2>
+<h3>Merge sort: split, sort halves, merge</h3>
+<p>Split the array in half, sort each half the same way (recursion), then <b>merge</b> two sorted halves by repeatedly taking the smaller front element. Always n log n. Needs extra space of size n. It is <b>stable</b> (equal items keep their original order).</p>
+<figure><svg viewBox="0 0 520 150" width="520" role="img" aria-label="Merge sort splits then merges">
+<g text-anchor="middle"><text x="260" y="18">[10 5 16 2 8 9]</text><text x="130" y="55">[10 5 16]</text><text x="390" y="55">[2 8 9]</text><text x="130" y="95">[5 10] [16]</text><text x="390" y="95">[2 8] [9]</text><text x="130" y="130">[5 10 16]</text><text x="390" y="130">[2 8 9]</text></g>
+<g stroke="currentColor"><path d="M230 24L150 42M290 24L370 42M130 62v18M390 62v18M130 102v16M390 102v16"/></g></svg>
+<figcaption>Split down to single items, then merge back up. Final merge of [5 10 16] and [2 8 9] gives [2 5 8 9 10 16].</figcaption></figure>
+<h3>Quick sort: pick a pivot, partition around it</h3>
+<p>Choose a pivot. Rearrange so everything smaller is to its left and everything larger to its right. The pivot is now in its final place. Sort the two sides the same way. Average n log n, but <b>worst case n²</b> when the pivot is always the smallest or largest (e.g. picking the first element on an already sorted array).</p>
+<h3>Heap sort: use a heap</h3>
+<p>Build a max-heap (see lesson 3), then repeatedly swap the top (largest) to the end and repair the heap. <b>Worst case O(n log n)</b> always, sorts in place, not stable.</p>
+
+<h2>Sorting without comparing: counting and radix</h2>
+<p><b>Counting sort</b> counts how many times each value appears and writes the values out in order; fast when the value range k is small: O(n + k). <b>Radix sort</b> sorts numbers one digit at a time, from the least significant digit to the most, using a stable sort for each digit. For d-digit numbers it takes d passes: <b>O(d·(n + k))</b>.</p>
+<div class="ex"><div class="label">Radix sort on 170, 45, 75, 90, 802</div>
+<p>Sort by units digit: 170, 90, 802, 45, 75. Then by tens digit: 802, 45, 170, 75, 90. Then by hundreds digit: 045, 075, 090, 170, 802. Done in 3 passes with no element-to-element comparisons.</p></div>
+
+<div class="box trap"><p><b>A question to be careful with.</b> 2023 Q25 asked for the "maximum number of comparisons" to radix-sort 6 three-digit numbers (options 120, 180, 210, 360). Radix sort does not compare elements with each other; it makes d passes (here 3), each pass over all n items. I could not derive which of those numbers the official key uses, so do not rely on my guess: check your key. What you do need to know is the cost, O(d·(n + k)).</p></div>
+
+<h2>Summary table</h2>
+<table><tr><th>Method</th><th>Best</th><th>Average</th><th>Worst</th><th>Extra space</th><th>Stable?</th></tr>
+<tr><td>Bubble (with early exit)</td><td>n</td><td>n²</td><td>n²</td><td>1</td><td>Yes</td></tr>
+<tr><td>Selection</td><td>n²</td><td>n²</td><td>n²</td><td>1</td><td>No</td></tr>
+<tr><td>Insertion</td><td>n</td><td>n²</td><td>n²</td><td>1</td><td>Yes</td></tr>
+<tr><td>Merge</td><td>n log n</td><td>n log n</td><td>n log n</td><td>n</td><td>Yes</td></tr>
+<tr><td>Quick</td><td>n log n</td><td>n log n</td><td>n²</td><td>log n</td><td>No</td></tr>
+<tr><td>Heap</td><td>n log n</td><td>n log n</td><td>n log n</td><td>1</td><td>No</td></tr></table>
+<div class="box tip"><p>"Best for an almost-sorted array": <b>insertion sort</b>. "Worst case guaranteed n log n and in place": <b>heap sort</b>.</p></div>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q7</div>
+<p class="q">Which sorting technique was applied to the input array {10, 5, 16, 2, 8, 9} to give {2, 5, 10, 16, 8, 9} after three iterations?</p>
+<button class="opt">Bubble sort</button><button class="opt">Selection sort</button><button class="opt">Insertion sort</button><button class="opt">All of the above</button>
+<div class="why" hidden><b>Insertion sort.</b> The first four elements (2 5 10 16) are sorted and the last two (8, 9) are exactly as in the input. See the table above: bubble would push large values to the end, selection would put the three smallest first.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q29</div>
+<p class="q">Worst case time complexity of heap sort for n elements is</p>
+<button class="opt">O(n log n)</button><button class="opt">O(log n)</button><button class="opt">O(n²)</button><button class="opt">O(n)</button>
+<div class="why" hidden>Building the heap costs O(n); each of the n extractions costs O(log n). Total <b>O(n log n)</b>, in every case.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">Practice (ISRO style, written by me)</div>
+<p class="q">Which sorting algorithm has the best running time when the input is already nearly sorted?</p>
+<button class="opt">Selection sort</button><button class="opt">Insertion sort</button><button class="opt">Heap sort</button><button class="opt">Quick sort with first-element pivot</button>
+<div class="why" hidden>Insertion sort does almost no shifting when elements are near their places, so it approaches O(n). Selection sort is always n². Quick sort with a first-element pivot is bad on sorted input.</div></div>
+
+<div class="foot">Primary source: CLRS, chapters 2, 6, 7, 8. <a href="0003-trees-and-heaps.html">Next: Trees and Heaps →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

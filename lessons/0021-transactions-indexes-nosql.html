@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>21 · Transactions, Indexes and NoSQL</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0020-normalization.html">← Normalization</a><a href="0022-boolean-algebra-and-gates.html">Next: Boolean Algebra and Gates →</a></nav>
+<h1>21 · Transactions, Indexes &amp; NoSQL</h1>
+<p class="sub"><span class="tag">Module F · Databases</span><span class="tag">Asked in 2023 and 2025</span> ACID, concurrency, isolation levels, indexing, and non-relational databases.</p>
+
+<h2>Start here: what is a transaction?</h2>
+<p>A <b>transaction</b> is a group of database operations that must be treated as one unit. Classic example: transfer ₹1000 from account A to B. It means (1) subtract 1000 from A, (2) add 1000 to B. If the system crashes between the two steps, ₹1000 vanishes. So either both steps happen or neither does.</p>
+<h2>ACID properties</h2>
+<table><tr><th>Letter</th><th>Property</th><th>Meaning</th><th>In the bank example</th></tr>
+<tr><td>A</td><td><b>Atomicity</b></td><td>All of the transaction happens or none of it</td><td>Never "debited but not credited"</td></tr>
+<tr><td>C</td><td><b>Consistency</b></td><td>Takes the database from one valid state to another</td><td>Total money unchanged</td></tr>
+<tr><td>I</td><td><b>Isolation</b></td><td>Concurrent transactions don't interfere; result is as if they ran one after another</td><td>Another transfer doesn't see half-done state</td></tr>
+<tr><td>D</td><td><b>Durability</b></td><td>Once committed, changes persist <b>always, whatever failure happens</b> (power cut, crash), usually via a log on stable storage</td><td>A confirmed transfer isn't lost</td></tr></table>
+<p>A transaction ends with <b>commit</b> (make permanent) or <b>rollback/abort</b> (undo everything).</p>
+
+<h2>Concurrency problems and isolation levels</h2>
+<p>Running transactions at the same time is faster but can cause:</p>
+<ul><li><b>Dirty read</b>: reading data another transaction wrote but hasn't committed (it may roll back).</li>
+<li><b>Non-repeatable read</b>: reading the same row twice and getting different values because another transaction changed it between your reads.</li>
+<li><b>Phantom read</b>: running the same query twice and getting extra rows because another transaction inserted some.</li>
+<li><b>Lost update</b>: two transactions overwrite each other's changes.</li></ul>
+<table><tr><th>Isolation level</th><th>Dirty read</th><th>Non-repeatable read</th><th>Phantom</th></tr>
+<tr><td>Read uncommitted</td><td>possible</td><td>possible</td><td>possible</td></tr><tr><td>Read committed</td><td>prevented</td><td>possible</td><td>possible</td></tr>
+<tr><td>Repeatable read</td><td>prevented</td><td>prevented</td><td>possible</td></tr><tr><td>Serializable</td><td>prevented</td><td>prevented</td><td>prevented</td></tr></table>
+<h3>Serializability</h3>
+<p>A <b>schedule</b> is the interleaving of operations from several transactions. It is <b>serializable</b> if its effect equals that of some serial (one-at-a-time) order. To test <b>conflict serializability</b>: two operations conflict if they touch the same item, belong to different transactions, and at least one is a write. Draw a <b>precedence graph</b> with an edge Ti → Tj when a conflicting operation of Ti comes before one of Tj. <b>No cycle ⇒ conflict-serializable.</b></p>
+<h3>Locking</h3>
+<p>Transactions take <b>shared (S)</b> locks to read and <b>exclusive (X)</b> locks to write. <b>Two-phase locking (2PL)</b>: a transaction first only acquires locks (growing phase), then only releases them (shrinking phase); this guarantees serializability. But locking can cause <b>deadlock</b>: T1 holds a lock on A and wants B, while T2 holds B and wants A. The DBMS detects the cycle (wait-for graph) and rolls one transaction back to break it.</p>
+<div class="ex"><div class="label">Worked scenario: two transfers can deadlock (2025 Q47)</div>
+<p>T1 moves ₹1000 from A to B (operations: read A, read B, write A, write B). T2 moves ₹1000 from B to A (read B, read A, write B, write A). Under locking at REPEATABLE READ, each read takes a shared lock. Suppose T1 reads A and T2 reads B, then T1 reads B and T2 reads A (all shared locks are compatible). Now T1 wants to write A, which needs an exclusive lock, but T2 holds a shared lock on A; T2 wants to write B, but T1 holds a shared lock on B. Each waits for the other: <b>deadlock</b>. The DBMS detects it and rolls back one transaction (either may be the victim), after which the other completes. If they run one after the other, both transfers apply and both balances end at ₹5000. If only T1 survives, the result is A = 4000, B = 6000. The question asked which outcome can <i>never</i> occur; work through each option with these cases and check the answer against your key, because I could not settle it from the text alone.</p></div>
+
+<h3>Recovery</h3>
+<p>Changes are written to a <b>log</b> first (<b>write-ahead logging</b>) so after a crash the DBMS can <b>redo</b> committed work and <b>undo</b> uncommitted work. <b>Checkpoints</b> limit how much log must be replayed.</p>
+
+<h2>Indexes</h2>
+<p>An <b>index</b> is like the index of a book: a separate structure that lets the DBMS find rows without scanning the whole table. Most are <b>B+ trees</b>: balanced trees with O(log n) search whose leaves are linked in sorted order, good for both equality and range queries. A <b>clustered</b> index determines the physical order of rows (one per table); <b>non-clustered</b> indexes are separate (many allowed). Indexes speed up reads but slow down inserts/updates and use space.</p>
+<div class="box"><p><b>Composite index rule (leftmost prefix).</b> An index on (country, city, street) is sorted by country, then city within country, then street within city. It helps queries that give <b>country</b>, or <b>country and city</b>, or <b>all three</b>. It does <b>not</b> help a query that gives only <b>street</b> (or only city): the streets are scattered across the whole index, like looking up a street in a phone book sorted by country and city.</p></div>
+
+<h2>NoSQL databases</h2>
+<p>"NoSQL" ("not only SQL") databases drop some relational rules to scale across many machines and handle varied data. Typical characteristics: <b>flexible (schema-less) structure</b>, horizontal scaling, often looser consistency (<b>BASE</b>: basically available, soft state, eventually consistent), and queries that often don't use SQL.</p>
+<table><tr><th>Type</th><th>Example</th><th>Stores</th></tr>
+<tr><td>Key–value</td><td>Redis, DynamoDB</td><td>Simple key → value pairs</td></tr><tr><td>Document</td><td>MongoDB</td><td>JSON-like documents</td></tr>
+<tr><td>Column-family</td><td><b>Cassandra</b>, HBase</td><td>Wide rows; <b>distributed</b></td></tr><tr><td>Graph</td><td>Neo4j</td><td>Nodes and relationships</td></tr></table>
+<p>The <b>CAP theorem</b>: a distributed data store can guarantee at most two of Consistency, Availability and Partition tolerance.</p>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q33</div>
+<p class="q">Amongst the ACID properties of a transaction, the 'Durability' property requires that the changes made to the database by a successful transaction persist</p>
+<button class="opt">Except in case of an operating system crash</button><button class="opt">Except in case of a disk crash</button><button class="opt">Except in case of a power failure</button><button class="opt">Always, even if there is a failure of any kind</button>
+<div class="why" hidden>Durability is the strongest promise: committed work must survive any failure (practically, via logs and backups).</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q45</div>
+<p class="q">A table users(userid, country, city, street) has 50 million users. A DBA creates the index myindex ON users(country, city, street). For which query will this index be least useful?</p>
+<button class="opt">SELECT userid FROM users WHERE country='IN'</button><button class="opt">SELECT userid FROM users WHERE street='MG Road'</button><button class="opt">… WHERE country='IN' AND city='Pune' AND street='MG Road'</button><button class="opt">… WHERE country='IN' AND city='Pune'</button>
+<div class="why" hidden>Leftmost-prefix rule: a query on street alone skips the leading columns.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q42</div>
+<p class="q">Which of the following is a characteristic of NoSQL databases?</p>
+<button class="opt">They enforce a strict schema</button><button class="opt">They support only the relational data model</button><button class="opt">They are queried using SQL</button><button class="opt">They support flexible schema</button>
+<div class="why" hidden>Flexible schema is the hallmark; the others describe relational databases.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q66</div>
+<p class="q">What type of data storage system is Cassandra?</p>
+<button class="opt">Distributed</button><button class="opt">Centralized</button><button class="opt">Parallel</button><button class="opt">Dumb</button>
+<div class="why" hidden>Cassandra is a distributed column-family NoSQL database with no single point of failure.</div></div>
+
+<div class="foot">Primary source: Silberschatz, Korth, Sudarshan, chapters 14–15, 11. <a href="0022-boolean-algebra-and-gates.html">Next: Boolean Algebra and Gates →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

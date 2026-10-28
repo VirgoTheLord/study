@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>29 · AI and Machine Learning</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0028-probability-counting-logic.html">← Probability and Logic</a><a href="0030-big-data-and-cloud.html">Next: Big Data and Cloud →</a></nav>
+<h1>29 · Artificial Intelligence &amp; Machine Learning</h1>
+<p class="sub"><span class="tag">Module I · AI and data</span><span class="tag">Asked in 2023 and 2025</span> Agents, search, logic, and the main learning methods.</p>
+
+<h2>Start here</h2>
+<p><b>Artificial intelligence (AI)</b> is making machines do things that normally need human intelligence: understanding language, recognising images, planning, deciding. <b>Machine learning (ML)</b> is the part of AI where the machine <i>learns patterns from data</i> instead of being explicitly programmed. Exams ask you for the standard names and what each one is for. Learn them as small, separate facts.</p>
+
+<h2>Intelligent agents</h2>
+<p>An <b>agent</b> perceives its environment through sensors and acts on it through actuators (a thermostat, a self-driving car, a chess program). The standard types, in increasing sophistication:</p>
+<table><tr><th>Type</th><th>How it decides</th></tr>
+<tr><td><b>Simple reflex</b></td><td>Rule: "if percept then action". No memory.</td></tr>
+<tr><td><b>Model-based reflex</b></td><td>Keeps an internal model of the world so it can handle things it can't see right now.</td></tr>
+<tr><td><b>Goal-based</b></td><td>Chooses actions that achieve a stated goal (uses search/planning).</td></tr>
+<tr><td><b>Utility-based</b></td><td>Picks the action with the best "happiness" score when several routes reach the goal.</td></tr>
+<tr><td><b>Learning agent</b></td><td>Improves its own performance from experience.</td></tr></table>
+<p>"Unity-based" is not an agent type (Unity is a game engine).</p>
+
+<h2>Search and optimisation</h2>
+<p>Many AI problems are search: find a path from a start state to a goal state.</p>
+<ul><li><b>Uninformed</b> search (no hints): breadth-first, depth-first, uniform-cost.</li>
+<li><b>Informed</b> search (uses a heuristic estimate h of the distance to the goal): greedy best-first, <b>A*</b> (f = g + h, where g is the cost so far; optimal if h never overestimates).</li>
+<li><b>Local search / optimisation</b>: <b>hill climbing</b> (keep moving to a better neighbour; can get stuck on a local peak), simulated annealing, genetic algorithms.</li></ul>
+<p>"Greedy algorithm" and "recursive algorithm" are general programming techniques, not AI search methods in the sense this question uses.</p>
+
+<h2>Logic in AI</h2>
+<p><b>Propositional logic</b> and <b>first-order logic (FOL)</b> are used to represent knowledge and reason. The connectives are ¬ (not), ∧ (and), ∨ (or), → (implies), ↔ (iff); FOL adds the quantifiers ∀ and ∃. A symbol like "&lt;&gt;" is not a standard connective.</p>
+<p>A <b>Bayesian network</b> is a graph of random variables with probabilities that captures how they influence each other. A <b>hybrid</b> Bayesian network has <b>both continuous and discrete</b> variables.</p>
+
+<h2>Machine learning, in three families</h2>
+<table><tr><th>Family</th><th>What the data looks like</th><th>Examples</th></tr>
+<tr><td><b>Supervised</b></td><td>Examples with correct labels</td><td><b>Classification</b> (spam / not spam) and <b>regression</b> (predict a number). Decision trees, Naive Bayes, SVM, k-NN, linear regression.</td></tr>
+<tr><td><b>Unsupervised</b></td><td>Data with no labels</td><td><b>Clustering</b> (k-means, hierarchical), dimensionality reduction (PCA)</td></tr>
+<tr><td><b>Reinforcement</b></td><td>An agent acts and receives rewards</td><td><b>Q-learning</b>, SARSA</td></tr></table>
+<ul><li>A <b>decision tree</b> asks a series of yes/no questions about the input and can be used for <b>both classification and regression</b>.</li>
+<li><b>k-means</b> splits data into k groups by moving k centres to the middle of their closest points. It is a <b>partitional</b> clustering method (as opposed to <i>hierarchical</i> methods that build a tree of merges (agglomerative) or splits (divisive)).</li>
+<li><b>PCA</b> reduces the number of features (unsupervised). <b>Naive Bayes</b> is a supervised classifier based on Bayes' theorem.</li></ul>
+<p>Typical benefits of AI quoted in exams: spotting business trends to support decisions, helping analyse cyber-security incidents, solving pattern-recognition problems by learning. When all are listed, the answer is "all of the above".</p>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q16</div>
+<p class="q">Which of the following is not a type of Artificial Intelligence agent?</p>
+<button class="opt">Simple AI agent</button><button class="opt">Unity based AI agent</button><button class="opt">Learning AI agent</button><button class="opt">Goal based AI agent</button>
+<div class="why" hidden>Standard types: simple reflex, model-based, goal-based, utility-based, learning.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q18</div>
+<p class="q">A decision tree in AI can be used for</p>
+<button class="opt">Only classification tasks</button><button class="opt">Only regression tasks</button><button class="opt">Both classification and regression tasks</button><button class="opt">Neither classification nor regression tasks</button>
+<div class="why" hidden>Classification trees predict classes; regression trees predict numbers.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q19</div>
+<p class="q">Which of the following algorithms is used for reinforcement learning?</p>
+<button class="opt">Naive Bayes</button><button class="opt">Principal Component Analysis</button><button class="opt">Fast Forest Quantile</button><button class="opt">Q-learning</button>
+<div class="why" hidden>Q-learning learns action values from rewards.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q20</div>
+<p class="q">Which of the following algorithms is used for search/optimization in AI?</p>
+<button class="opt">Greedy Algorithm</button><button class="opt">Recursive Algorithm</button><button class="opt">Hill Climbing Algorithm</button><button class="opt">Hot Potato Algorithm</button>
+<div class="why" hidden>Hill climbing is a local-search optimisation method. "Hot potato" is a routing technique.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q61</div>
+<p class="q">Which of the following is not a connective of First Order Logic with reference to AI?</p>
+<button class="opt">∧</button><button class="opt">∨</button><button class="opt">&lt;&gt;</button><button class="opt">¬</button>
+<div class="why" hidden>The connectives are ¬, ∧, ∨, →, ↔.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q62</div>
+<p class="q">A hybrid Bayesian network contains</p>
+<button class="opt">Only continuous variables</button><button class="opt">Only discrete variables</button><button class="opt">Both discrete and discontinuous variables</button><button class="opt">Both continuous and discrete variables</button>
+<div class="why" hidden>"Hybrid" = mixing continuous and discrete variables.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2023 · Q65</div>
+<p class="q">Which of the following clustering techniques is used by the K-Means algorithm?</p>
+<button class="opt">Hierarchical Technique</button><button class="opt">Partitional technique</button><button class="opt">Divisive</button><button class="opt">Agglomerative</button>
+<div class="why" hidden>k-means partitions the data into k groups.</div></div>
+
+<div class="foot">Primary source: Russell &amp; Norvig, <i>Artificial Intelligence: A Modern Approach</i>; Mitchell, <i>Machine Learning</i>. <a href="0030-big-data-and-cloud.html">Next: Big Data and Cloud →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

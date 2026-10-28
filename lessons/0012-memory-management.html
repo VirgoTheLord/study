@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>12 · Memory Management</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0011-synchronization-and-deadlock.html">← Synchronization</a><a href="0013-network-basics-and-layers.html">Next: Network Basics →</a></nav>
+<h1>12 · Memory Management</h1>
+<p class="sub"><span class="tag">Module C · Operating systems</span><span class="tag">Asked in 2023 and 2025</span> Allocation, paging, segmentation, virtual memory, page replacement.</p>
+
+<h2>Start here</h2>
+<p>A program must be in main memory (RAM) to run. The OS must decide where to put each process, keep processes out of each other's memory, and cope when the programs together need more memory than exists. Every idea in this lesson is an answer to one of those problems.</p>
+<ul><li>A <b>logical (virtual) address</b> is what the program uses. A <b>physical address</b> is a real RAM location. A hardware unit, the <b>MMU</b>, translates one to the other.</li></ul>
+
+<h2>Contiguous allocation and fragmentation</h2>
+<p>The simplest scheme gives each process one continuous block of memory. When processes come and go, free memory breaks into scattered holes. Choosing which hole to give to a new process:</p>
+<table><tr><th>Strategy</th><th>Rule</th></tr>
+<tr><td><b>First fit</b></td><td>The first hole that is big enough (fast)</td></tr>
+<tr><td><b>Next fit</b></td><td>Like first fit, but start searching from where the last search ended</td></tr>
+<tr><td><b>Best fit</b></td><td>The smallest hole that is big enough (leaves tiny useless leftovers)</td></tr>
+<tr><td><b>Worst fit</b></td><td>The largest hole (leaves large leftovers)</td></tr></table>
+<p>Two kinds of waste: <b>internal fragmentation</b> (wasted space <i>inside</i> an allocated block, e.g. a fixed-size block bigger than needed) and <b>external fragmentation</b> (enough total free memory, but scattered in pieces too small to use). <b>Compaction</b> shuffles processes together to merge the holes.</p>
+<div class="box"><p><b>Exam note:</b> 2023 asked which heap-allocation strategy best exploits spatial locality (options: best, first, next, last fit). I could not confirm the official answer, so I am not claiming one. The reasoning to apply: a strategy that keeps handing out memory from nearby addresses keeps related data close together, and next fit continues from the previous allocation point while first fit always restarts from the low end. Check your answer key.</p></div>
+
+<h2>Paging</h2>
+<p>Paging removes external fragmentation. Physical memory is divided into equal <b>frames</b>; a process's logical memory is divided into <b>pages</b> of the same size. Any page can go into any free frame. A <b>page table</b> per process maps page number → frame number.</p>
+<div class="ex"><div class="label">Worked example: address translation</div>
+<p>Page size 1 KB (1024 bytes). Logical address 2500. Page number = 2500 ÷ 1024 = 2 (integer part), offset = 2500 mod 1024 = 452. Suppose the page table says page 2 is in frame 7. Physical address = 7 × 1024 + 452 = <b>7620</b>.</p></div>
+<p>In binary terms: a logical address is split into <b>page number | offset</b>; the physical address is <b>frame number | offset</b>; the offset is unchanged.</p>
+<h3>The TLB</h3>
+<p>The page table lives in memory, so each access would cost two memory reads (one for the table, one for the data). The <b>TLB (translation lookaside buffer)</b> is a small fast cache of recent translations. <b>Effective access time</b> = hit ratio × (TLB time + memory time) + (1 − hit ratio) × (TLB time + 2 × memory time).</p>
+<div class="ex"><div class="label">Worked example</div>
+<p>TLB 10 ns, memory 100 ns, hit ratio 90%. EAT = 0.9 × (10 + 100) + 0.1 × (10 + 200) = 99 + 21 = <b>120 ns</b>.</p></div>
+
+<h2>Segmentation</h2>
+<p>Programmers think in logical units: the code, the data, the stack, the heap. <b>Segmentation</b> splits a process into such variable-sized segments. An address is a pair <b>(segment number, offset)</b>. A segment table holds each segment's base and limit; if the offset exceeds the limit the hardware traps. Segmentation can suffer external fragmentation. The <b>compiler</b> creates the segments, and the <b>loader</b> assigns them segment numbers when the program is loaded.</p>
+
+<h2>Virtual memory and demand paging</h2>
+<p>With <b>virtual memory</b>, a process can be larger than RAM: only the pages currently needed are kept in frames; the rest stay on disk. This is <b>demand paging</b>: a page is brought in only when it is touched. A reference to a page not in memory causes a <b>page fault</b>:</p>
+<ol class="steps"><li>The hardware traps to the OS.</li><li>The OS finds the page on disk.</li><li>It finds a free frame (or evicts a page, see below).</li><li>It reads the page from disk into the frame.</li><li>It updates the page table and restarts the instruction.</li></ol>
+<p>A page fault is very slow (disk, milliseconds), so even a tiny fault rate hurts: with memory 200 ns, fault service 8 ms and fault rate p = 1/1000, EAT = (1 − p) × 200 + p × 8,000,000 ns ≈ <b>8200 ns</b>, 40 times slower. <b>Thrashing</b> is when the system spends more time swapping pages than doing useful work.</p>
+
+<h2>Page replacement algorithms</h2>
+<p>When memory is full and a fault occurs, the OS must evict a page. Goal: fewest page faults on a given reference string.</p>
+<table><tr><th>Algorithm</th><th>Evict…</th></tr>
+<tr><td><b>FIFO</b></td><td>The page that has been in memory longest</td></tr>
+<tr><td><b>LRU</b></td><td>The page not used for the longest time (look <i>back</i>)</td></tr>
+<tr><td><b>Optimal</b></td><td>The page whose next use is farthest in the future (look <i>ahead</i>); fewest faults possible but impossible to implement in practice; used as a benchmark</td></tr></table>
+<div class="ex"><div class="label">Worked example: Optimal with 3 frames (2025 question)</div>
+<p>Reference string: 6, 0, 5, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2, 5, 2</p>
+<table><tr><th>Ref</th><th>Frames after</th><th>Fault?</th><th>Why</th></tr>
+<tr><td>6</td><td>6</td><td>F</td><td>empty</td></tr><tr><td>0</td><td>6 0</td><td>F</td><td>empty</td></tr><tr><td>5</td><td>6 0 5</td><td>F</td><td>empty</td></tr>
+<tr><td>2</td><td>2 0 5</td><td>F</td><td>evict 6 (never used again)</td></tr><tr><td>0</td><td>2 0 5</td><td>hit</td><td></td></tr>
+<tr><td>3</td><td>2 0 3</td><td>F</td><td>evict 5 (next use is last)</td></tr><tr><td>0</td><td>2 0 3</td><td>hit</td><td></td></tr>
+<tr><td>4</td><td>2 4 3</td><td>F</td><td>evict 0 (used after 2 and 3)</td></tr><tr><td>2</td><td>2 4 3</td><td>hit</td><td></td></tr><tr><td>3</td><td>2 4 3</td><td>hit</td><td></td></tr>
+<tr><td>0</td><td>2 0 3</td><td>F</td><td>evict 4 (never used again)</td></tr><tr><td>3</td><td>2 0 3</td><td>hit</td><td></td></tr><tr><td>2</td><td>2 0 3</td><td>hit</td><td></td></tr>
+<tr><td>5</td><td>2 5 3 (or 2 0 5)</td><td>F</td><td>evict 0 or 3 (neither used again)</td></tr><tr><td>2</td><td></td><td>hit</td><td></td></tr></table>
+<p>Faults: 6, 0, 5, 2, 3, 4, 0, 5 = <b>8</b>. For comparison, on the same string LRU gives 10 and FIFO gives 12.</p></div>
+<div class="box trap"><p><b>Belady's anomaly:</b> with FIFO, giving a process <i>more</i> frames can produce <i>more</i> faults. On the string 1,2,3,4,1,2,5,1,2,3,4,5: FIFO has 9 faults with 3 frames but 10 with 4 frames. LRU and Optimal never show this.</p></div>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q70</div>
+<p class="q">Consider the reference string 6, 0, 5, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2, 5, 2 and 3 frames. The number of page faults using the Optimal page replacement algorithm is</p>
+<button class="opt">15 page faults</button><button class="opt">9 page faults</button><button class="opt">12 page faults</button><button class="opt">8 page faults</button>
+<div class="why" hidden>8, from the trace above. 12 is what FIFO would give, so it is a trap if you forget which algorithm is asked.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q50</div>
+<p class="q">As part of segmentation memory allocation strategy, which of the following assigns segment numbers for various segments of a program like code segment and data segment?</p>
+<button class="opt">Compiler</button><button class="opt">Assembler</button><button class="opt">Loader</button><button class="opt">Linker</button>
+<div class="why" hidden>In the standard textbook description, the compiler creates the segments, and the loader takes them and assigns segment numbers. (This is from Silberschatz's segmentation section; if your key says otherwise, trust the key.)</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">Practice (written by me)</div>
+<p class="q">A system has page size 4 KB. A logical address 10000 is in page number ___ with offset ___.</p>
+<button class="opt">2, 1808</button><button class="opt">2, 4096</button><button class="opt">3, 1808</button><button class="opt">1, 5904</button>
+<div class="why" hidden>10000 ÷ 4096 = 2 remainder 10000 − 8192 = 1808.</div></div>
+
+<div class="foot">Primary source: Silberschatz, Galvin, Gagne, chapters 8 and 9. <a href="0013-network-basics-and-layers.html">Next: Network Basics →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

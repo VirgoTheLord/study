@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>4 · Graph Basics</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0003-trees-and-heaps.html">← Trees and Heaps</a><a href="0005-graph-algorithms.html">Next: Graph Algorithms →</a></nav>
+<h1>4 · Graph Basics</h1>
+<p class="sub"><span class="tag">Module A · Graph theory</span><span class="tag">Asked in 2023 and 2025</span> Vocabulary, counting formulas, planar graphs, colouring.</p>
+
+<h2>Start here</h2>
+<p>A <b>graph</b> is just dots joined by lines. The dots are <b>vertices</b> (or nodes); the lines are <b>edges</b>. Cities and roads, people and friendships, web pages and links: all graphs. Exam questions test whether you know the vocabulary and a handful of counting formulas.</p>
+
+<h2>Vocabulary</h2>
+<table><tr><th>Term</th><th>Meaning</th></tr>
+<tr><td>Degree of a vertex</td><td>How many edges touch it</td></tr>
+<tr><td>Path / cycle</td><td>A route along edges / a route that returns to its start</td></tr>
+<tr><td>Connected</td><td>You can get from any vertex to any other</td></tr>
+<tr><td>Simple graph</td><td>No self-loops and no duplicate edges between the same pair</td></tr>
+<tr><td>Multigraph</td><td>Parallel (duplicate) edges are allowed</td></tr>
+<tr><td>Complete graph Kₙ</td><td>Every pair of vertices has an edge</td></tr>
+<tr><td>Regular graph</td><td>Every vertex has the same degree (it is <i>not</i> the same as multigraph)</td></tr>
+<tr><td>Bipartite</td><td>Vertices split into two groups; edges only go between the groups (no odd cycles)</td></tr>
+<tr><td>Tree</td><td>Connected graph with no cycles</td></tr>
+<tr><td>Directed graph</td><td>Edges have a direction (arrows)</td></tr>
+<tr><td>Planar graph</td><td>Can be drawn on paper with no edges crossing</td></tr></table>
+
+<h2>Distances inside a graph</h2>
+<ul><li><b>Eccentricity</b> of a vertex = the distance to the vertex farthest from it.</li>
+<li><b>Radius</b> = the smallest eccentricity over all vertices. <b>Diameter</b> = the largest eccentricity.</li>
+<li><b>Centre</b> = the vertices whose eccentricity equals the radius. So eccentricity <i>can</i> equal the radius (for centre vertices).</li>
+<li><b>Girth</b> = the length (number of edges) of the shortest cycle.</li></ul>
+<div class="ex"><div class="label">Worked example</div>
+<p>Take a path A–B–C–D–E (five vertices in a line). Eccentricities: A: 4 (to E), B: 3, C: 2, D: 3, E: 4. Radius = 2, diameter = 4, centre = {C}. The graph has no cycle, so no girth.</p></div>
+
+<h2>The counting formulas</h2>
+<div class="box"><p><b>1. Handshake lemma:</b> sum of all degrees = 2 × (number of edges). Each edge adds 1 to the degree of both its ends. So the number of odd-degree vertices is always even.</p>
+<p><b>2. Edges in the complete graph Kₙ:</b> pick any 2 of n vertices: <b>n(n−1)/2</b>.</p>
+<p><b>3. Number of different simple graphs on n labelled vertices:</b> there are n(n−1)/2 possible edges and each is either present or absent, so <b>2^(n(n−1)/2)</b>.</p>
+<p><b>4. A tree with n vertices has n − 1 edges.</b></p></div>
+
+<h2>Planar graphs and Euler's formula</h2>
+<p>When a connected planar graph is drawn with no crossings, the lines divide the paper into regions called <b>faces</b>. The unbounded region outside the drawing counts as one face.</p>
+<div class="def"><p><b>Euler's formula:</b> V − E + F = 2 &nbsp; (V vertices, E edges, F faces including the outer one).</p></div>
+<p>Also, for a simple planar graph with at least 3 vertices, <b>E ≤ 3V − 6</b>. Consequences: K₅ and K₃,₃ are not planar.</p>
+<div class="ex"><div class="label">Worked example (2023): faces and vertices given</div>
+<p>A planar graph has 5 faces and 9 vertices. V − E + F = 2 → 9 − E + 5 = 2 → E = 12.</p></div>
+<div class="ex"><div class="label">Worked example (2025): the parks question</div>
+<p>20 malls (vertices), each reached by exactly 3 roads. Total degree = 20 × 3 = 60, so edges = 60/2 = 30 by the handshake lemma. Euler: F = 2 − V + E = 2 − 20 + 30 = 12 faces. One face is the outside, so the number of enclosed regions where a park can sit is 12 − 1 = <b>11</b>.</p></div>
+
+<h2>Graph colouring</h2>
+<p>Colour the vertices so that two joined vertices never share a colour. The <b>chromatic number</b> is the smallest number of colours needed.</p>
+<ul><li>A graph with no edges: 1. Any bipartite graph (e.g. a tree or an even cycle): 2. An odd cycle: 3. Kₙ: n (all vertices are mutually adjacent). The Four-Colour Theorem: every planar graph needs ≤ 4.</li>
+<li>The chromatic number is at least the size of the largest clique (a group of mutually adjacent vertices), and at most (maximum degree + 1).</li></ul>
+<div class="ex"><div class="label">Worked example</div>
+<p>A 5-cycle (pentagon): colour the vertices in order 1,2,1,2 and the fifth vertex touches both a 1 and a 2, so it needs a third colour. Chromatic number = 3.</p></div>
+
+<h2>How graphs are stored</h2>
+<p><b>Adjacency matrix</b>: an n×n table with 1 where an edge exists (n² memory, edge check in O(1)). <b>Adjacency list</b>: for each vertex, the list of neighbours (memory V + E, better for sparse graphs).</p>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q5</div>
+<p class="q">There are 20 shopping malls in a city interconnected by roads. Each mall can be reached through 3 different roads. Roads do not cross each other and do not pass through a park; only one park per region. What is the maximum number of parks that can be constructed in the regions enclosed by roads?</p>
+<button class="opt">12</button><button class="opt">30</button><button class="opt">60</button><button class="opt">11</button>
+<div class="why" hidden>Handshake: E = 20×3/2 = 30. Euler: F = 2 − 20 + 30 = 12. Subtract the outer face: <b>11</b>.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q43</div>
+<p class="q">If there are five faces and nine vertices in an undirected planar graph, then the number of edges is</p>
+<button class="opt">14</button><button class="opt">16</button><button class="opt">12</button><button class="opt">None of the above</button>
+<div class="why" hidden>9 − E + 5 = 2, so E = 12.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q6</div>
+<p class="q">Maximum number of simple graphs possible with n vertices</p>
+<button class="opt">2^(n(n−1)/2)</button><button class="opt">2^((n−1)/2)</button><button class="opt">2^(n(n+1)/2)</button><button class="opt">2^(n(n+1))</button>
+<div class="why" hidden>n(n−1)/2 possible edges, each present or not.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q42</div>
+<p class="q">Which are true? (i) In a graph with n vertices and e edges, the sum of degrees = 2e. (ii) The eccentricity of a connected graph can never equal the radius. (iii) Girth is the total number of edges in the shortest cycle. (iv) A graph with equal degree for all vertices is a multigraph.</p>
+<button class="opt">(i), (ii), (iii)</button><button class="opt">(ii), (iii), (iv)</button><button class="opt">(i), (iii), (iv)</button><button class="opt">None of the above</button>
+<div class="why" hidden>(i) true. (ii) false: centre vertices have eccentricity equal to the radius. (iii) true. (iv) false: that describes a regular graph. The only true statements are (i) and (iii), a combination that none of the first three options lists, so the answer is <b>none of the above</b>.</div></div>
+
+<div class="foot">Primary source: Rosen, <i>Discrete Mathematics</i>, graph chapters; West, <i>Introduction to Graph Theory</i>. <a href="0005-graph-algorithms.html">Next: Graph Algorithms →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

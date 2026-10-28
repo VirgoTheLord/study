@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>27 · Linear Algebra and Calculus</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0026-computer-organization.html">← Computer Organization</a><a href="0028-probability-counting-logic.html">Next: Probability, Counting, Logic →</a></nav>
+<h1>27 · Linear Algebra &amp; Calculus</h1>
+<p class="sub"><span class="tag">Module H · Maths</span><span class="tag">Asked in 2023 and 2025</span> Matrices, determinants, eigenvalues and simple integrals.</p>
+
+<h2>Start here: what is a matrix?</h2>
+<p>A <b>matrix</b> is a rectangular grid of numbers. An <b>m × n</b> matrix has m rows and n columns. A <b>square</b> matrix has the same number of rows and columns. The <b>identity matrix I</b> has 1s on the diagonal and 0s elsewhere. The <b>transpose Aᵀ</b> swaps rows and columns. <b>Multiplying</b> matrices: (m×n) times (n×p) gives (m×p); each entry is a row of the first dotted with a column of the second.</p>
+
+<h2>Determinants</h2>
+<p>The <b>determinant</b> det(A) is a single number computed from a square matrix. It tells you whether the matrix is invertible: <b>det ≠ 0 ⇔ invertible</b>; det = 0 means "singular".</p>
+<ul><li>2×2: det [[a, b],[c, d]] = <b>ad − bc</b>.</li>
+<li>3×3: expand along a row or column (cofactor expansion): det = a₁₁(a₂₂a₃₃ − a₂₃a₃₂) − a₁₂(a₂₁a₃₃ − a₂₃a₃₁) + a₁₃(a₂₁a₃₂ − a₂₂a₃₁). Choose the row or column with the most zeros to save work.</li></ul>
+<div class="ex"><div class="label">Worked example</div>
+<p>det [[2, 3],[4, 5]] = 2·5 − 3·4 = −2.</p></div>
+<div class="box"><p><b>Time-saving properties (look for these before computing anything):</b><br>• A row (or column) of all zeros → det = 0.<br>• Two identical or proportional rows/columns → det = 0.<br>• A row that is a sum or multiple of other rows → det = 0.<br>• Triangular or diagonal matrix → det = product of the diagonal entries.<br>• Swapping two rows → det changes sign. Multiplying a row by k → det multiplies by k.<br>• det(AB) = det(A) det(B); det(Aᵀ) = det(A); for an n×n matrix det(kA) = kⁿ det(A).</p></div>
+<p>Questions that give a 4×4 matrix of "nice" numbers often hide a dependency between rows (e.g. row 3 = row 1 + row 2), making the determinant 0. Try subtracting rows from each other first.</p>
+
+<h2>Eigenvalues and eigenvectors</h2>
+<div class="def"><p>A nonzero vector v is an <b>eigenvector</b> of A with <b>eigenvalue λ</b> if A v = λ v: the matrix just stretches v by λ without turning it. Find eigenvalues by solving the <b>characteristic equation det(A − λI) = 0</b>.</p></div>
+<ul><li>For an n×n matrix there are n eigenvalues (counting repeats).</li>
+<li><b>Sum of eigenvalues = trace</b> (the sum of the diagonal). <b>Product of eigenvalues = det(A).</b></li>
+<li>For a <b>triangular</b> matrix (all zeros above or below the diagonal), the eigenvalues are simply the diagonal entries.</li>
+<li>A matrix is singular exactly when 0 is one of its eigenvalues.</li></ul>
+<div class="ex"><div class="label">Worked example: a matrix with a zero-heavy first column</div>
+<p>A = [[4, 3, 1],[0, 6, 0],[0, 4, 7]]. Expand det(A − λI) along the first column (only the top entry is non-zero): (4 − λ) × det [[6 − λ, 0],[4, 7 − λ]] = (4 − λ)(6 − λ)(7 − λ). So the eigenvalues are 4, 6, 7, and the smallest is 4. Check with the properties: trace = 17 = 4 + 6 + 7 ✓.</p></div>
+<div class="box trap"><p>When a matrix is given in a PDF, take care to read the rows in the right order: swapping row order changes which entries sit in the zero-heavy column and therefore the answer.</p></div>
+
+<h2>Integrals</h2>
+<p>A <b>definite integral</b> ∫ₐᵇ f(x) dx is the area under f between a and b. Useful rules: ∫ xⁿ dx = xⁿ⁺¹/(n+1) (for n ≠ −1), so ∫₀¹ x² dx = 1/3.</p>
+<p>For a <b>multiple (double or triple) integral</b> over a box with constant limits, when the integrand factors into pieces that each depend on one variable, integrate each piece on its own and multiply:</p>
+<div class="ex"><div class="label">Worked example</div>
+<p>∫₀¹ ∫₀² ∫₀³ x y z dz dy dx = (∫₀¹ x dx)(∫₀² y dy)(∫₀³ z dz) = (1/2)(2)(9/2) = 9/2.</p></div>
+<div class="box tip"><p><b>Symmetry shortcut:</b> an <b>odd</b> function (f(−x) = −f(x), like x, x³) integrated over a symmetric interval [−a, a] gives <b>0</b>. An <b>even</b> function (x², x⁴) gives twice the integral over [0, a]. In a triple integral, if one factor is odd and its interval is symmetric, the whole integral is 0.</p></div>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="2"><div class="src">Practice (ISRO 2023 Q41 style, written by me)</div>
+<p class="q">The determinant of the matrix with rows (1, 2, 3), (2, 4, 6), (5, 1, 0) is</p>
+<button class="opt">−15</button><button class="opt">15</button><button class="opt">0</button><button class="opt">1</button>
+<div class="why" hidden>Row 2 = 2 × Row 1 (proportional rows), so the determinant is 0 without any calculation.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">Practice (ISRO 2025 Q57 style, written by me)</div>
+<p class="q">The smallest eigenvalue of the matrix [[4, 3, 1],[0, 6, 0],[0, 4, 7]] is</p>
+<button class="opt">3</button><button class="opt">4</button><button class="opt">6</button><button class="opt">7</button>
+<div class="why" hidden>Eigenvalues are 4, 6, 7 (factorised characteristic polynomial above); the smallest is 4.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">Practice (written by me)</div>
+<p class="q">If the eigenvalues of a 3×3 matrix are 2, 3 and 5, its determinant and trace are</p>
+<button class="opt">det 10, trace 30</button><button class="opt">det 10, trace 10</button><button class="opt">det 30, trace 30</button><button class="opt">det 30, trace 10</button>
+<div class="why" hidden>Product of eigenvalues = det = 30. Sum = trace = 10.</div></div>
+
+<div class="foot">Primary source: Kreyszig, <i>Advanced Engineering Mathematics</i>, matrices and integration chapters. Two paper questions (2023 Q41, 2025 Q56, Q58) depended on matrices or limits that did not survive text extraction, so I wrote practice questions of the same kind. <a href="0028-probability-counting-logic.html">Next: Probability, Counting, Logic →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

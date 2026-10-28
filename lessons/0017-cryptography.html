@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>17 · Cryptography</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0016-transport-layer.html">← Transport Layer</a><a href="0018-attacks-and-defences.html">Next: Attacks and Defences →</a></nav>
+<h1>17 · Cryptography</h1>
+<p class="sub"><span class="tag">Module E · Security</span><span class="tag">Asked in 2023 and 2025</span> Security goals, symmetric and public-key encryption, RSA, hashes and signatures.</p>
+
+<h2>Start here: what is security trying to achieve?</h2>
+<table><tr><th>Goal</th><th>In plain words</th></tr>
+<tr><td><b>Confidentiality</b></td><td>Only the right people can read it (protection from unauthorised disclosure)</td></tr>
+<tr><td><b>Integrity</b></td><td>It arrives exactly as it was sent; nobody altered it</td></tr>
+<tr><td><b>Availability</b></td><td>The service works when you need it</td></tr>
+<tr><td><b>Authentication</b></td><td>You are who you say you are</td></tr>
+<tr><td><b>Non-repudiation</b></td><td>The sender cannot later deny having sent it</td></tr>
+<tr><td><b>Access control</b></td><td>Only authorised people may use a resource</td></tr></table>
+<p><b>Cryptography</b> is the toolbox: turn readable <b>plaintext</b> into unreadable <b>ciphertext</b> using a <b>key</b> (<i>encryption</i>), and back again (<i>decryption</i>).</p>
+
+<h2>Symmetric-key cryptography</h2>
+<p>Sender and receiver share <b>one secret key</b>, used both to lock and unlock. Fast, so used for bulk data. Examples: <b>DES</b> (56-bit key, now weak), <b>3DES</b>, <b>AES</b> (128-bit blocks, keys of 128, 192 or 256 bits), plus stream ciphers like RC4.</p>
+<ul><li><b>Key space</b>: an n-bit key has <b>2ⁿ</b> possible values. Each extra bit doubles the number of keys an attacker must try.</li>
+<li><b>The key-distribution problem</b>: how do two strangers agree on a secret key over an open network? And if every pair of n people needs a unique key, you need <b>n(n−1)/2</b> keys (one per pair). For 16 persons: 16 × 15 / 2 = <b>120 keys</b>.</li></ul>
+
+<h2>Public-key (asymmetric) cryptography</h2>
+<p>Each person has a <b>key pair</b>: a <b>public key</b> (shared openly) and a <b>private key</b> (kept secret). What one key locks, only the other unlocks.</p>
+<ul><li><b>Confidentiality</b>: encrypt with the receiver's <i>public</i> key; only their private key decrypts.</li>
+<li><b>Authentication / digital signature</b>: encrypt (sign) with your <i>private</i> key; anyone can check with your public key. This also gives non-repudiation.</li>
+<li>It needs only <b>2n keys</b> for n people, solving the distribution problem, but it is much slower than symmetric encryption. So in practice it is used to exchange a symmetric key and for signatures. It does not help against denial-of-service attacks.</li>
+<li>Algorithms: <b>RSA</b>, ECC, ElGamal; <b>Diffie–Hellman</b> is for key exchange.</li></ul>
+<h3>RSA step by step</h3>
+<ol class="steps"><li>Pick two primes p and q. Compute <b>n = p × q</b>.</li><li>Compute <b>φ(n) = (p − 1)(q − 1)</b>.</li><li>Pick public exponent <b>e</b> with gcd(e, φ) = 1.</li><li>Find private exponent <b>d</b> with <b>e × d ≡ 1 (mod φ)</b>.</li><li>Public key = (e, n). Private key = (d, n). Encrypt: c = mᵉ mod n. Decrypt: m = cᵈ mod n.</li></ol>
+<div class="ex"><div class="label">Worked example (2025 question)</div>
+<p>p = 11, q = 13, d = 7. n = 143, φ = 10 × 12 = 120. We need e with e × 7 ≡ 1 (mod 120), i.e. e × 7 = 1 + 120k. Try k = 6: 721 = 7 × 103, so <b>e = 103</b>. Check the other options: 143 × 7 = 1001 = 8 × 120 + 41 ✗; 21 × 7 = 147 = 120 + 27 ✗; 19 × 7 = 133 = 120 + 13 ✗.</p></div>
+<div class="ex"><div class="label">Tiny RSA in action</div>
+<p>p = 3, q = 11: n = 33, φ = 20. Pick e = 3; d = 7 (3 × 7 = 21 ≡ 1 mod 20). Encrypt m = 4: c = 4³ mod 33 = 64 mod 33 = 31. Decrypt: 31⁷ mod 33 = 4 ✓.</p></div>
+
+<h2>Hashes, MACs, signatures, certificates</h2>
+<table><tr><th>Tool</th><th>What it does</th><th>Key?</th></tr>
+<tr><td><b>Hash / message digest</b> (SHA-256, MD5)</td><td>Turns any message into a fixed-size fingerprint; one-way; any change flips the fingerprint. Gives integrity checks.</td><td><b>No key</b></td></tr>
+<tr><td><b>MAC / HMAC</b></td><td>A hash computed with a shared secret key: integrity <i>and</i> authenticity</td><td>Shared key</td></tr>
+<tr><td><b>Digital signature</b></td><td>Hash the message, then encrypt the hash with the sender's private key</td><td>Private key</td></tr>
+<tr><td><b>Digital certificate</b></td><td>A document binding a public key to an identity, signed by a Certificate Authority (CA)</td><td></td></tr></table>
+<p><b>PKI</b> (public key infrastructure) is the system of CAs and certificates that lets you trust public keys. The standard certificate format is <b>X.509</b>. (X.25 is an old packet-switching protocol; IEEE 802.11 is Wi-Fi; 802.3 is Ethernet.)</p>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="0"><div class="src">ISRO 2025 · Q38</div>
+<p class="q">An RSA crypto system selects two primes p = 11 and q = 13. If the private key is d = 7, which of the following can be the value of the public key e?</p>
+<button class="opt">103</button><button class="opt">143</button><button class="opt">21</button><button class="opt">19</button>
+<div class="why" hidden>φ = 120; e × 7 ≡ 1 (mod 120) gives e = 103 (7 × 103 = 721 = 6 × 120 + 1).</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2025 · Q8</div>
+<p class="q">How many keys are needed for encrypted communication among 16 persons using AES encryption assuming a unique key is used between any two persons?</p>
+<button class="opt">120 keys</button><button class="opt">256 keys</button><button class="opt">32 keys</button><button class="opt">2¹⁶ keys</button>
+<div class="why" hidden>One key per pair: 16 × 15 ÷ 2 = 120.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q9</div>
+<p class="q">Which of the following does not use key(s)?</p>
+<button class="opt">Symmetric ciphers</button><button class="opt">Generation of message digest</button><button class="opt">Generation of Message Authentication Code</button><button class="opt">Key exchange algorithms</button>
+<div class="why" hidden>A plain hash is keyless. A MAC needs a key; ciphers and key exchange use keys.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q74</div>
+<p class="q">Asymmetric encryption is not suitable for</p>
+<button class="opt">Confidentiality</button><button class="opt">Authentication</button><button class="opt">Key Exchange</button><button class="opt">Prevention of Denial of Service</button>
+<div class="why" hidden>It gives confidentiality, authentication (signatures) and key exchange, but encryption by itself doesn't stop DoS.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q15</div>
+<p class="q">Which of the following defines the format for Public Key Infrastructure?</p>
+<button class="opt">X.25</button><button class="opt">X.509</button><button class="opt">IEEE 802.11</button><button class="opt">IEEE 802.3</button>
+<div class="why" hidden>X.509 is the certificate standard.</div></div>
+
+<div class="foot">Primary source: Stallings, <i>Cryptography and Network Security</i>. <a href="0018-attacks-and-defences.html">Next: Attacks and Defences →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

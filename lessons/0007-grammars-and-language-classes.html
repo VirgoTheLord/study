@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>7 · Grammars and Language Classes</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0006-finite-automata-and-regex.html">← Finite Automata</a><a href="0008-compiler-phases.html">Next: Compiler Phases →</a></nav>
+<h1>7 · Grammars, Language Classes &amp; Closure</h1>
+<p class="sub"><span class="tag">Module B · Theory of computation</span><span class="tag">Asked in 2023 (3 Qs) and 2025</span> Context-free grammars, the hierarchy of machines, and which operations keep a class closed.</p>
+
+<h2>Start here: why finite automata are not enough</h2>
+<p>A finite automaton can't count. Consider the language {aⁿbⁿ : n ≥ 0} = ε, ab, aabb, aaabbb… To check it you must remember how many a's you saw, and n can be arbitrarily large, but a finite automaton has only a fixed number of states. So this language is <b>not regular</b>. To handle it we need a machine with memory (a <b>stack</b>) and a more powerful way to describe languages (<b>grammars</b>).</p>
+
+<h2>Context-free grammars (CFG)</h2>
+<div class="def"><p>A CFG is a set of <b>rewrite rules</b> (productions). A symbol in capitals is a <b>non-terminal</b> (a placeholder that can be rewritten); lowercase symbols are <b>terminals</b> (the final characters). Starting from the <b>start symbol</b>, you keep replacing non-terminals until only terminals remain. The set of all strings you can produce is the language of the grammar.</p></div>
+<div class="ex"><div class="label">Worked example: S → aSb | ε</div>
+<p>Start with S. Apply S → aSb: <code>aSb</code>. Apply it again: <code>aaSbb</code>. Finish with S → ε: <code>aabb</code>. The grammar produces ε, ab, aabb, aaabbb, …: exactly {aⁿbⁿ}. The rule works like a counter: each a on the left is matched by a b on the right.</p></div>
+<div class="ex"><div class="label">How to work out the language of an unfamiliar grammar</div>
+<p>Take <code>S → A | B</code>, <code>A → aAb | c</code>, <code>B → bBd | e</code>. Look at A alone: it wraps a…b around itself, ending in c: so A generates aⁿcbⁿ (c, acb, aacbb, …). Likewise B generates bⁿedⁿ (e, bed, bbedd, …). S picks one of them. To test a given string, ask which family it belongs to. <code>aacbb</code> = a²cb² is in the first family; <code>accbb</code> has two c's and is in neither.</p></div>
+<div class="ex"><div class="label">The "which language does this grammar generate?" question (asked in 2023 and 2025)</div>
+<p>These questions give a grammar and offer languages such as {aᵐbⁿ : 0 ≤ m ≤ n}, {aᵐbⁿ : 0 ≤ m &lt; n}, {aᵐbⁿ : m &lt; n ≤ …} or {aⁿbⁿ}. Method: (1) find which rule adds an a <i>and</i> a b together (this fixes the "m" part), (2) find which rules add extra b's (or a's) alone, (3) check whether at least one extra is forced.</p>
+<p>Example: <code>S → aSb | T</code> and <code>T → bT | b</code>. The first rule adds an a and a b together, giving aᵐ … bᵐ. Then S → T, and T produces one or more b's (T → bT | b always ends with a real b). So every string has m a's and m + (at least 1) b's: the language is <b>{aᵐbⁿ : 0 ≤ m &lt; n}</b>. If instead T could also produce nothing (T → bT | ε), the extra b's could be zero and the language would be {aᵐbⁿ : 0 ≤ m ≤ n}. The whole difference between "&lt;" and "≤" is whether the extra part is forced to be non-empty. Test with the smallest string: is "b" generated? Is "ab"? Is "ε"?</p>
+<p>(The exact grammars in 2023 Q57, Q60 and 2025 Q80 were garbled in the PDF text, so I could not include them; use this method on the printed ones.)</p></div>
+
+<h3>Parse trees, derivations, ambiguity</h3>
+<p>A <b>derivation</b> is the step-by-step sequence of rewrites. A <b>leftmost derivation</b> always rewrites the leftmost non-terminal first; a <b>rightmost</b> one rewrites the rightmost. A <b>parse tree</b> shows the structure. A grammar is <b>ambiguous</b> if some string has two different parse trees (equivalently two different leftmost derivations). Example: <code>E → E + E | E × E | id</code>. The string <code>id + id × id</code> can be grouped as (id + id) × id or id + (id × id): two parse trees, so the grammar is ambiguous. (Lesson 9 shows how to fix it.)</p>
+
+<h2>Machines and the hierarchy of languages</h2>
+<figure>
+<svg viewBox="0 0 440 250" width="440" role="img" aria-label="Nested classes of languages">
+<g fill="none" stroke="currentColor" stroke-width="1.4"><ellipse cx="220" cy="125" rx="210" ry="115"/><ellipse cx="220" cy="135" rx="180" ry="95"/><ellipse cx="220" cy="145" rx="150" ry="75"/><ellipse cx="220" cy="155" rx="118" ry="56"/><ellipse cx="220" cy="165" rx="82" ry="38"/></g>
+<g text-anchor="middle"><text x="220" y="26">Recursively enumerable (Turing machine)</text><text x="220" y="62">Recursive (halting Turing machine)</text><text x="220" y="94">Context-sensitive (linear bounded automaton)</text><text x="220" y="126">Context-free (pushdown automaton)</text><text x="220" y="162">Regular (finite automaton)</text></g></svg>
+<figcaption>Each ring contains all the rings inside it. Stronger machine = bigger class of languages.</figcaption></figure>
+<table><tr><th>Class</th><th>Machine</th><th>Example language</th></tr>
+<tr><td>Regular</td><td>DFA / NFA (no memory)</td><td>Strings ending in b</td></tr>
+<tr><td>Context-free</td><td>Pushdown automaton (a stack)</td><td>aⁿbⁿ, palindromes</td></tr>
+<tr><td>Context-sensitive</td><td>Linear bounded automaton</td><td>aⁿbⁿcⁿ</td></tr>
+<tr><td>Recursive (decidable)</td><td>Turing machine that always halts</td><td>Does this program have a syntax error?</td></tr>
+<tr><td>Recursively enumerable</td><td>Turing machine (may loop forever)</td><td>Halting problem</td></tr></table>
+<p><b>Decidable</b> means some algorithm always halts with yes/no. <b>Semi-decidable</b> (RE) means an algorithm halts with "yes" when the answer is yes but may run forever when it is no. The <b>halting problem</b> ("does this program ever stop?") is undecidable.</p>
+
+<h2>Closure properties</h2>
+<p>A class is <b>closed under</b> an operation if applying that operation to languages in the class gives a language still in the class. Exams ask "which statement is false/not true?" and the answers come from this table.</p>
+<table><tr><th>Operation</th><th>Regular</th><th>Context-free</th><th>Recursive</th><th>Recursively enumerable</th></tr>
+<tr><td>Union</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Concatenation</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Kleene star</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Reversal</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Intersection</td><td>✓</td><td><b>✗</b></td><td>✓</td><td>✓</td></tr>
+<tr><td>Complement</td><td>✓</td><td><b>✗</b></td><td>✓</td><td><b>✗</b></td></tr></table>
+<div class="box tip"><p><b>Three rules that decide most questions:</b></p>
+<p>1. CFL ∩ regular language = <b>context-free</b> (not necessarily regular). Example: a*b* ∩ {aⁿbⁿ} = {aⁿbⁿ}.</p>
+<p>2. If a language <i>and</i> its complement are both recursively enumerable, the language is <b>recursive</b>.</p>
+<p>3. Recursive languages are closed under complement; recursively enumerable ones are <b>not</b>.</p></div>
+<h3>Decision problems</h3>
+<table><tr><th>Question</th><th>Regular</th><th>Context-free</th></tr>
+<tr><td>Is a string in the language?</td><td>Decidable</td><td>Decidable</td></tr>
+<tr><td>Is the language empty / finite?</td><td>Decidable</td><td>Decidable</td></tr>
+<tr><td>Are two machines/grammars equivalent?</td><td>Decidable</td><td><b>Undecidable</b></td></tr>
+<tr><td>Is a given CFG ambiguous?</td><td>—</td><td><b>Undecidable</b></td></tr></table>
+<h3>Telling regular from non-regular</h3>
+<p>A language is non-regular if recognising it needs unbounded counting or matching: aⁿbⁿ, {ww}, palindromes, strings with equal numbers of a's and b's. The <b>pumping lemma</b> is the formal tool: any long enough string in a regular language has a middle section that can be repeated any number of times and still stay in the language.</p>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q58</div>
+<p class="q">Which of the following statements is NOT true?</p>
+<button class="opt">If a language is recursive its complement is recursive</button>
+<button class="opt">If a language is recursive its complement is recursively enumerable</button>
+<button class="opt">If a language and its complement are recursively enumerable it is recursive</button>
+<button class="opt">If a language is recursively enumerable its complement is also recursively enumerable</button>
+<div class="why" hidden>The last statement is false: RE languages are <i>not</i> closed under complement. (If they were, then by rule 2 every RE language would be recursive, and the halting problem would be decidable.)</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2023 · Q59</div>
+<p class="q">Which of the following statements is FALSE?</p>
+<button class="opt">The intersection of a regular language and a context-free language is context-free</button>
+<button class="opt">The intersection of a regular language and a context-free language is regular</button>
+<button class="opt">The union of two context-free languages is context-free</button>
+<button class="opt">The union of two regular languages is regular</button>
+<div class="why" hidden>The intersection is context-free, not necessarily regular. Counterexample: a*b* ∩ {aⁿbⁿ} = {aⁿbⁿ}, which is not regular.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q33</div>
+<p class="q">Which of the following strings will correctly match the grammar G: S → A | B, A → aAb | c, B → bBd | e?</p>
+<button class="opt">accbb</button><button class="opt">aacbb</button><button class="opt">abaed</button><button class="opt">aaebb</button>
+<div class="why" hidden>A makes aⁿcbⁿ. aacbb = a²cb² ✓. The others mix the two families or contain two c's.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">Practice (written by me)</div>
+<p class="q">Which of these languages is NOT regular?</p>
+<button class="opt">Strings over {a,b} ending with b</button><button class="opt">Strings over {a,b} with an even number of a's</button><button class="opt">Strings over {a,b} with equal numbers of a's and b's</button><button class="opt">Strings over {a,b} containing "ab"</button>
+<div class="why" hidden>"Equal numbers" needs unbounded counting, so a finite automaton cannot do it. The other three each need only a few states of memory.</div></div>
+
+<div class="foot">Primary source: Sipser, chapters 2–5. <a href="0008-compiler-phases.html">Next: Compiler Phases →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

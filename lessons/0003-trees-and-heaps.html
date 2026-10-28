@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3 · Trees and Heaps</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0002-sorting.html">← Sorting</a><a href="0004-graph-basics.html">Next: Graph Basics →</a></nav>
+<h1>3 · Trees, BSTs, Heaps and Expressions</h1>
+<p class="sub"><span class="tag">Module A · Data structures</span><span class="tag">Asked in 2023 and 2025</span> Traversals, binary search trees, priority queues, postfix and prefix.</p>
+
+<h2>Start here: what is a tree?</h2>
+<p>A tree is a way to store things in a hierarchy, like a family tree or folders on a computer. There is one starting node, the <b>root</b>. Every node can have <b>children</b>. A node with no children is a <b>leaf</b>. The number of edges from the root down to a node is its <b>depth</b>; the longest such path is the tree's <b>height</b>. A tree with n nodes always has exactly <b>n − 1 edges</b>.</p>
+<p>A <b>binary tree</b> is a tree where every node has at most two children, called left and right.</p>
+
+<h2>Traversals: three ways to visit every node</h2>
+<p>A traversal is a rule for the order in which you visit nodes. The names tell you <i>when the root is visited</i>:</p>
+<table><tr><th>Name</th><th>Order</th></tr><tr><td><b>Pre</b>order</td><td>Root, then left subtree, then right subtree</td></tr><tr><td><b>In</b>order</td><td>Left subtree, then root, then right subtree</td></tr><tr><td><b>Post</b>order</td><td>Left subtree, then right subtree, then root</td></tr></table>
+<figure>
+<svg viewBox="0 0 360 190" width="360" role="img" aria-label="Binary tree with root 10, left child 5 with children 1 and 7, right child 40 with right child 50">
+<g stroke="currentColor" fill="none" stroke-width="1.5"><line x1="180" y1="30" x2="110" y2="80"/><line x1="180" y1="30" x2="250" y2="80"/><line x1="110" y1="80" x2="70" y2="140"/><line x1="110" y1="80" x2="150" y2="140"/><line x1="250" y1="80" x2="290" y2="140"/>
+<circle cx="180" cy="30" r="17"/><circle cx="110" cy="80" r="17"/><circle cx="250" cy="80" r="17"/><circle cx="70" cy="140" r="17"/><circle cx="150" cy="140" r="17"/><circle cx="290" cy="140" r="17"/></g>
+<g text-anchor="middle"><text x="180" y="35">10</text><text x="110" y="85">5</text><text x="250" y="85">40</text><text x="70" y="145">1</text><text x="150" y="145">7</text><text x="290" y="145">50</text></g></svg>
+<figcaption>Our example tree</figcaption></figure>
+<div class="ex"><div class="label">Worked example: all three traversals</div>
+<p><b>Preorder</b>: visit 10, then go left: visit 5, then its left 1, its right 7; then right of 10: visit 40, then 50. Result: <b>10 5 1 7 40 50</b>.</p>
+<p><b>Inorder</b>: for 10, first do the whole left subtree (inorder of 5: 1, 5, 7), then 10, then right subtree (40, 50). Result: <b>1 5 7 10 40 50</b>.</p>
+<p><b>Postorder</b>: left subtree of 10 postorder = 1 7 5; right subtree = 50 40; then 10. Result: <b>1 7 5 50 40 10</b>.</p></div>
+<p>Trick for the exam: write the rule down, apply it recursively, and always finish a whole subtree before moving on.</p>
+
+<h2>Binary search trees (BST)</h2>
+<div class="def"><p><b>BST rule:</b> for every node, everything in its left subtree is smaller, and everything in its right subtree is larger.</p></div>
+<ul>
+<li><b>Search</b>: start at the root; go left if the target is smaller, right if larger. Cost = height of the tree (log n if balanced, n if it degenerates into a line).</li>
+<li><b>Insert</b>: search for where it would be, and attach it there.</li>
+<li><b>Inorder traversal of a BST is the sorted list.</b> (Look at the example above: 1 5 7 10 40 50.) This is the most useful fact.</li>
+<li><b>Delete</b>: a leaf is removed directly; a node with one child is replaced by that child; a node with two children is replaced by its inorder successor (smallest in the right subtree) or predecessor.</li>
+<li><b>Inorder predecessor</b> of a node = the next smaller value. Go to its left child, then keep going right as far as possible. If there is no left child, it's the closest ancestor you reached by turning right.</li></ul>
+<div class="ex"><div class="label">Worked example: rebuild a BST from its preorder</div>
+<p>Preorder is <code>10, 5, 1, 7, 40, 50</code>. The first element, 10, is the root. In preorder the next values smaller than 10 (5, 1, 7) form the left subtree, and the remaining larger ones (40, 50) form the right. Repeat inside each: left subtree has root 5, with 1 (smaller → left) and 7 (larger → right). Right subtree has root 40 with 50 as its right child. That gives exactly the tree drawn above. Its postorder is 1 7 5 50 40 10.</p></div>
+<div class="box trap"><p><b>Any binary tree</b> is determined by its preorder together with its inorder (or postorder with inorder). Preorder alone is enough <i>only for a BST</i>, because the BST rule tells you where each value belongs.</p></div>
+
+<h2>Heaps and priority queues</h2>
+<p>A <b>priority queue</b> is a waiting line where the item with the highest priority is served first, not the one who arrived first. Items can be inserted at any priority, and the item removed is whichever has the highest priority. (So it is not a simple front/back queue.)</p>
+<p>The standard implementation is a <b>binary heap</b>: a <i>complete</i> binary tree (all levels full except possibly the last, filled left to right) with the <b>heap rule</b>: in a <b>max-heap</b> each parent is ≥ its children (a min-heap is the opposite). A heap is stored in a plain array: the children of position i are at 2i and 2i+1.</p>
+<ul>
+<li><b>Insert</b>: put the new item at the end, then "bubble up" by swapping with its parent while it is bigger. Cost O(log n).</li>
+<li><b>Delete the top</b>: move the last item to the root, then "sift down" by swapping with the larger child. O(log n).</li>
+<li><b>Build a heap</b> from n items: O(n).</li></ul>
+
+<h2>Expressions: infix, prefix, postfix</h2>
+<p>We normally write <b>infix</b>: <code>A + B</code>, operator in the middle. In <b>prefix</b> (Polish notation) the operator goes first: <code>+ A B</code>. In <b>postfix</b> (reverse Polish) it goes last: <code>A B +</code>. Postfix and prefix need no brackets because the order already says what to do first.</p>
+<div class="ex"><div class="label">Worked example: A*B + C*D to postfix</div>
+<p>Multiplication goes before addition, so group as (A*B) + (C*D). Convert each part: A B *, and C D *. Then put + after both: <b>A B * C D * +</b>. The prefix form is + * A B * C D.</p></div>
+<div class="ex"><div class="label">Worked example: evaluate a postfix expression with a stack</div>
+<p>Scan left to right. A number → push it. An operator → pop two numbers, apply, push the result. For <code>2 3 4 * +</code>: push 2, push 3, push 4; see *: pop 4 and 3, push 12; see +: pop 12 and 2, push 14. Answer: 14.</p></div>
+<div class="ex"><div class="label">Worked example: evaluate a prefix expression</div>
+<p>Scan <b>right to left</b> using the same stack rule (first popped is the left operand). For <code>+ 3 * 4 5</code>: push 5, push 4, see *: 4*5 = 20; push 3; see +: 3+20 = 23.</p></div>
+
+<h2>Other quick facts</h2>
+<ul><li><b>Diameter</b> of a binary tree (longest path between two nodes) can be found in O(n) with one traversal: at each node, the longest path through it is (height of left) + (height of right) + 1 nodes.</li>
+<li>Pointer arithmetic (C/C++): adding 1 to a pointer moves it by the size of its type. If an <code>int</code> is 2 bytes and p = 200, then <code>p + 3</code> = 200 + 3 × 2 = <b>206</b>.</li></ul>
+
+<h3>Evaluating a polynomial with the fewest operations (Horner's rule)</h3>
+<p>To evaluate aₙxⁿ + … + a₁x + a₀ cheaply, nest it: ((aₙx + aₙ₋₁)x + …)x + a₀. A degree-n polynomial then takes n multiplications and n additions, instead of computing every power separately. When some terms are missing, factor smartly: 8z³ + 3z + 12 = z(8z² + 3) + 12 needs z² (1 multiplication), 8·z² (1), +3 (1), ×z (1), +12 (1) = <b>5 operations</b>. (The polynomial in 2023 Q5 was garbled in the PDF text; if it is this one, the answer is 5. Apply the same nesting method to whatever the printed polynomial is.)</p>
+<h3>Pointers and arrays in C/C++: what can crash a program</h3>
+<p><code>int *ptr = new int[4];</code> reserves room for four ints: valid positions are <code>ptr[0]</code> to <code>ptr[3]</code>. Then: <code>ptr++</code> and <code>ptr += 3</code> just move the pointer inside the block, which is legal (but you must remember the original address to free it later). <code>ptr = nullptr</code> leaks the memory but does not itself crash. <code>ptr[4] = 0x16</code> writes <b>one element past the end</b>: this is out-of-bounds access, <b>undefined behaviour</b> that can corrupt the heap and crash the program. Other classic C/C++ memory errors: buffer overflow, using freed memory (dangling pointer), freeing the same memory twice, dereferencing a null pointer.</p>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q17</div>
+<p class="q">In Reverse Polish notation, the expression A*B+C*D is written as</p>
+<button class="opt">AB*CD*+</button><button class="opt">A*BCD*+</button><button class="opt">AB*CD+*</button><button class="opt">A*B*CD+</button>
+<div class="why" hidden>Reverse Polish = postfix. Build (A*B) and (C*D) as AB* and CD*, then place + after both: <b>AB*CD*+</b>. Option 3 wrongly applies * last.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q28</div>
+<p class="q">In a priority queue, insertion and deletion can be done at</p>
+<button class="opt">Front</button><button class="opt">Back</button><button class="opt">Middle</button><button class="opt">Any position</button>
+<div class="why" hidden>Items are inserted wherever their priority puts them and removed by priority, not by arrival position: any position.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q27</div>
+<p class="q">Pointer p to an array of integers (of size 2 bytes) is initialised to 200. What is the value of p+3?</p>
+<button class="opt">206</button><button class="opt">203</button><button class="opt">212</button><button class="opt">204</button>
+<div class="why" hidden>p + 3 advances 3 elements of 2 bytes each: 200 + 6 = 206.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">Practice (ISRO 2023 Q4 style, written by me)</div>
+<p class="q">The preorder traversal of a BST is (10, 5, 1, 7, 40, 50). Its postorder traversal is</p>
+<button class="opt">1, 5, 7, 10, 40, 50</button><button class="opt">1, 7, 5, 50, 40, 10</button><button class="opt">50, 40, 10, 7, 5, 1</button><button class="opt">1, 5, 7, 50, 40, 10</button>
+<div class="why" hidden>Rebuild the tree as above, then take left, right, root. (In the printed 2023 paper the options as extracted did not include this sequence, so it may be a different tree or a misprint there; use this method regardless.)</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q34</div>
+<p class="q">Consider the C++ snippet <code>int *ptr; ptr = new int[4];</code>. Which of the following statements, when executed subsequently, may make the program crash?</p>
+<button class="opt">ptr++;</button><button class="opt">ptr += 3;</button><button class="opt">ptr[4] = 0x16;</button><button class="opt">ptr = null;</button>
+<div class="why" hidden>ptr[4] is outside the four allocated ints. The first two moves keep the pointer inside or one past the block; assigning null just loses the address.</div></div>
+
+<div class="foot">Primary source: CLRS, chapters 6 and 12. <a href="0004-graph-basics.html">Next: Graph Basics →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

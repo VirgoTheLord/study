@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>19 · Relational Model, ER Diagrams and SQL</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0018-attacks-and-defences.html">← Attacks and Defences</a><a href="0020-normalization.html">Next: Normalization →</a></nav>
+<h1>19 · The Relational Model, ER Diagrams &amp; SQL</h1>
+<p class="sub"><span class="tag">Module F · Databases</span><span class="tag">Asked in 2023 and 2025</span> Tables and keys, turning an ER diagram into tables, and the SQL you need.</p>
+
+<h2>Start here</h2>
+<p>A <b>database</b> stores organised data; a <b>DBMS</b> (database management system) is the software that manages it. In the <b>relational model</b> data lives in <b>tables</b> (called relations). A table has <b>columns</b> (attributes) and <b>rows</b> (tuples). Example, a <code>student</code> table:</p>
+<table><tr><th>roll_no</th><th>name</th><th>dept_id</th></tr><tr><td>1</td><td>Asha</td><td>10</td></tr><tr><td>2</td><td>Ravi</td><td>20</td></tr></table>
+
+<h2>Keys</h2>
+<table><tr><th>Key</th><th>Meaning</th></tr>
+<tr><td><b>Super key</b></td><td>Any set of attributes that uniquely identifies a row</td></tr>
+<tr><td><b>Candidate key</b></td><td>A <i>minimal</i> super key (remove any attribute and it stops being unique)</td></tr>
+<tr><td><b>Primary key</b></td><td>The candidate key you choose as the main identifier (no NULLs, no duplicates)</td></tr>
+<tr><td><b>Foreign key</b></td><td>Attributes in one table that refer to the primary key of another, linking the tables (here <code>dept_id</code> refers to the department table)</td></tr></table>
+
+<h2>ER diagrams and how to turn them into tables</h2>
+<p>An <b>entity-relationship (ER) diagram</b> is a picture used to design a database: <b>entities</b> (things: Student, Course), <b>attributes</b> (their properties) and <b>relationships</b> between them (Student enrols in Course) with a <b>cardinality</b>: one-to-one (1:1), one-to-many (1:N), many-to-many (M:N). The ER model shows the <b>static</b> structure of the data (not behaviour or processes).</p>
+<div class="box"><p><b>Conversion rules</b><br>• Each entity becomes a table.<br>• <b>1:N</b>: put the foreign key on the <b>"many" side</b>; no new table.<br>• <b>M:N</b>: create a new <b>junction table</b> holding the keys of both entities.<br>• <b>1:1</b>: put the foreign key on either side (or merge the tables).</p></div>
+<div class="ex"><div class="label">Worked example: Authors and Books</div>
+<p>One author writes many books (1:N). So the foreign key <code>author_id</code> goes in the <code>books</code> table. Putting it in <code>authors</code> would need a list of books in one cell, which breaks the rule of atomic values.</p></div>
+<div class="ex"><div class="label">Worked example (2025): count the tables</div>
+<p>Entities A and B. R1 is one-to-many from A to B: it is stored as a foreign key in B, no extra table. R2 is many-to-many: needs a junction table. Tables: A, B, R2 = <b>3</b>.</p></div>
+
+<h2>SQL essentials</h2>
+<pre>SELECT name, dept_id          -- which columns
+FROM student                  -- which table
+WHERE dept_id = 10            -- filter rows
+ORDER BY name;                -- sort
+
+INSERT INTO student VALUES (3, 'Meera', 10);
+UPDATE student SET dept_id = 20 WHERE roll_no = 3;
+DELETE FROM student WHERE roll_no = 3;</pre>
+<h3>Joins: combining tables</h3>
+<ul><li><b>Cross join</b> (Cartesian product): every row of R paired with every row of S. If R has 3 rows and S has 4 you get 12 rows. <code>SELECT * FROM R, S</code> (with no WHERE) is a cross join.</li>
+<li><b>Inner join</b>: only the pairs that satisfy the join condition: <code>SELECT * FROM student s JOIN dept d ON s.dept_id = d.dept_id</code>.</li>
+<li><b>Natural join</b>: inner join on all same-named columns.</li>
+<li><b>Outer joins</b> (left/right/full): also keep unmatched rows, filling the gaps with NULL.</li></ul>
+<h3>Grouping and aggregation</h3>
+<pre>SELECT dept_id, COUNT(*), AVG(marks)
+FROM student
+GROUP BY dept_id
+HAVING COUNT(*) &gt; 5;   -- HAVING filters groups; WHERE filters rows</pre>
+<h3>Subqueries</h3>
+<p>A query inside a query. To delete all teachers whose department is in the CSE building:</p>
+<pre>DELETE FROM teacher
+WHERE dept_name IN (SELECT dept_name FROM department
+                    WHERE building = 'CSE');</pre>
+<p>(You cannot write <code>dept_name IN 'CSE'</code>; the building lives in the other table, so a subquery is needed.)</p>
+<h3>Views</h3>
+<p>A <b>view</b> is a saved query that acts like a virtual table: <code>CREATE VIEW cse_students AS SELECT name FROM student WHERE dept_id = 10;</code>. It can be queried like a normal table, normally does not keep a duplicate copy of the data, and is useful for <b>restricting access to sensitive columns</b>. Simple views can be updated; complex ones (with joins or aggregates) often cannot.</p>
+<div class="ex"><div class="label">Worked example (2023 puzzle): reading what a sequence of inserts does</div>
+<p>Table T(X, Y) starts with (1, 1). Then 128 times we insert (MX+1, 2·MY+1), where MX, MY are the current maxima. Rows: X=1,Y=1; X=2,Y=3; X=3,Y=7; X=4,Y=15; X=5,Y=31; X=6,Y=63; X=7,Y=127. Y follows 2ˣ − 1. For X = 7 the answer is <b>127</b>.</p></div>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="1"><div class="src">ISRO 2023 · Q31</div>
+<p class="q">In SQL the statement <code>select * from R, S</code> is equivalent to</p>
+<button class="opt">Select * from R natural join S</button><button class="opt">Select * from R cross join S</button><button class="opt">Select * from R outer join S</button><button class="opt">Select * from R inner join S</button>
+<div class="why" hidden>A comma-separated list of tables with no condition is the Cartesian product.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q32</div>
+<p class="q">Which SQL query deletes all tuples in the teacher relation for those teachers associated with a department located in the building named CSE (building is in the department relation)?</p>
+<button class="opt">DELETE FROM teacher WHERE dept_name IN 'CSE';</button><button class="opt">DELETE FROM department WHERE building='CSE';</button><button class="opt">DELETE FROM teacher WHERE dept_name IN (SELECT dept_name FROM department WHERE building = 'CSE');</button><button class="opt">None of the above</button>
+<div class="why" hidden>The subquery finds the departments in CSE; the outer query deletes the teachers of those departments from the correct table.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q30</div>
+<p class="q">Table T has columns X and Y. One record (X=1, Y=1) is inserted. Then, 128 times, a new record is inserted with X = MX+1 and Y = 2×MY+1 (MX, MY being the maxima at that moment). What is the output of SELECT Y FROM T WHERE X=7?</p>
+<button class="opt">127</button><button class="opt">15</button><button class="opt">129</button><button class="opt">257</button>
+<div class="why" hidden>Y = 2ˣ − 1, so X = 7 gives 127.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2025 · Q44</div>
+<p class="q">Assume a one-to-many relationship from table "authors" to table "books". Where should the foreign key reside in an optimal design?</p>
+<button class="opt">In the "books" table</button><button class="opt">In the "authors" table</button><button class="opt">In both the tables</button><button class="opt">In a separate linking table</button>
+<div class="why" hidden>The "many" side holds the foreign key.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q46</div>
+<p class="q">A and B are two entities in an E-R diagram with simple single-value attributes. R1 is a one-to-many relationship from A to B; R2 is a many-to-many relationship from A to B. What is the minimum number of tables required to represent A, B, R1 and R2 in the relational model?</p>
+<button class="opt">4</button><button class="opt">2</button><button class="opt">6</button><button class="opt">3</button>
+<div class="why" hidden>A, B, and the junction table for R2. R1 is just a foreign key in B.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q43</div>
+<p class="q">Which of the following statements is true about database views?</p>
+<button class="opt">Views always store a duplicate copy of the data</button><button class="opt">Views can be used to restrict access to sensitive columns</button><button class="opt">Views cannot be queried like normal database tables</button><button class="opt">Views cannot be updated under any condition</button>
+<div class="why" hidden>A view exposes only chosen columns/rows. The "always/cannot" options are too absolute.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q80</div>
+<p class="q">The Entity Relationship model shows the</p>
+<button class="opt">Static view</button><button class="opt">Functional view</button><button class="opt">Dynamic view</button><button class="opt">All of the above</button>
+<div class="why" hidden>ER shows structure of data (static). Functional and dynamic views are shown by DFDs and state diagrams.</div></div>
+
+<div class="foot">Primary source: Silberschatz, Korth, Sudarshan, <i>Database System Concepts</i>, chapters 2–5, 7. <a href="0020-normalization.html">Next: Normalization →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

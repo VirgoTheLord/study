@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1 · Big-O and Growth Rates</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="../index.html">← Course</a><a href="0002-sorting.html">Next: Sorting →</a></nav>
+<h1>1 · Big-O and Growth Rates</h1>
+<p class="sub"><span class="tag">Module A · Algorithms</span><span class="tag">Asked in 2023 and 2025</span> How to say "how slow is this program?" in one line.</p>
+
+<h2>Start here: why do we need this?</h2>
+<p>Suppose two people write a program to find a name in a list. Both programs work. Which one is better? You cannot just time them, because the timing depends on the computer. So instead we count <b>how many steps the program takes as the input grows</b>. If the list has <code>n</code> names, does the work grow like <code>n</code>? Like <code>n × n</code>? Like <code>log n</code>? That growth pattern is what <b>Big-O notation</b> describes.</p>
+<div class="def"><p><b>Big-O</b>: <code>O(f(n))</code> means "the running time grows no faster than <code>f(n)</code> once n is large, ignoring constant factors." It is an <i>upper bound</i>. People also use <b>Ω (omega)</b> for a lower bound and <b>Θ (theta)</b> for "exactly this growth, bounded above and below."</p></div>
+
+<h2>Step 1: count the steps</h2>
+<p>Look at the loops. Each pattern has a standard cost:</p>
+<table><tr><th>Code shape</th><th>Steps</th><th>Why</th></tr>
+<tr><td><code>for i in 1..n: do something</code></td><td>n</td><td>The body runs n times</td></tr>
+<tr><td><code>for i in 1..n: for j in 1..n: …</code></td><td>n²</td><td>n times n</td></tr>
+<tr><td><code>i = 1; while i &lt; n: i = i × 2</code></td><td>log₂ n</td><td>i doubles each time; it takes log₂ n doublings to reach n</td></tr>
+<tr><td>Two loops one after the other</td><td>n + n = 2n → O(n)</td><td>Add, don't multiply</td></tr>
+<tr><td>Loop of n whose body does a log n loop</td><td>n log n</td><td>Multiply nested costs</td></tr></table>
+
+<h2>Step 2: drop constants and small terms</h2>
+<p>A program that takes <code>3n² + 10n + 7</code> steps is <code>O(n²)</code>. When n = 1,000,000, the <code>n²</code> term is a trillion and the rest barely matters. So: <b>keep only the biggest term and delete its constant multiplier</b>.</p>
+<div class="ex"><div class="label">Worked example</div>
+<p>How many substrings can you form from a string of length m? Count by starting position: starting at position 1 there are m choices of end, starting at position 2 there are m−1, … down to 1. Total = m + (m−1) + … + 1 = <b>m(m+1)/2</b>, which is O(m²).</p></div>
+<div class="ex"><div class="label">Worked example</div>
+<p>Multiplying an <code>m × n</code> matrix by an <code>n × p</code> matrix. The result has m·p cells. Each cell is a sum of n products. Total work = m · p · n = <b>O(m·n·p)</b>.</p></div>
+<div class="ex"><div class="label">Worked example</div>
+<p>A truth table with n variables has one row for every combination of 0/1 values. Two choices per variable, n variables: 2 × 2 × … × 2 = <b>2ⁿ rows</b>.</p></div>
+
+<h2>Step 3: the ladder of growth rates</h2>
+<p class="chain"><span>1</span> &lt; <span>log n</span> &lt; <span>√n</span> &lt; <span>n</span> &lt; <span>n log n</span> &lt; <span>n^1.5</span> &lt; <span>n²</span> &lt; <span>n³</span> &lt; <span>n^(log n)</span> &lt; <span>2ⁿ</span> &lt; <span>n!</span> &lt; <span>nⁿ</span></p>
+<p>To get a feel, here is what each means for n = 1,000:</p>
+<table><tr><th>Class</th><th>Steps for n = 1000</th><th>Typical example</th></tr>
+<tr><td>O(1)</td><td>1</td><td>Read an array element by index</td></tr>
+<tr><td>O(log n)</td><td>10</td><td>Binary search</td></tr>
+<tr><td>O(n)</td><td>1,000</td><td>Scan a list once</td></tr>
+<tr><td>O(n log n)</td><td>10,000</td><td>Merge sort, heap sort</td></tr>
+<tr><td>O(n²)</td><td>1,000,000</td><td>Bubble sort</td></tr>
+<tr><td>O(2ⁿ)</td><td>more than the number of atoms in the universe</td><td>Trying every subset</td></tr></table>
+
+<h3>How to compare two weird functions</h3>
+<p>When two functions are hard to compare, <b>take the logarithm of both</b> (a larger function has a larger log).</p>
+<div class="ex"><div class="label">Worked example: where does n^(log n) sit?</div>
+<ol class="steps"><li>log(n^(log n)) = (log n) · (log n) = <b>(log n)²</b>.</li>
+<li>log(n²) = 2 log n. Since (log n)² beats 2 log n for large n, n^(log n) is bigger than n².</li>
+<li>The same holds for every nᶜ (c a constant): (log n)² beats c·log n.</li>
+<li>log(2ⁿ) = <b>n</b>. And n beats (log n)². So 2ⁿ is bigger than n^(log n).</li></ol>
+<p>Conclusion: any polynomial &lt; n^(log n) &lt; 2ⁿ.</p></div>
+<div class="box trap"><p><b>Common mistake:</b> thinking n^(log n) is exponential. It is slower-growing than 2ⁿ. And n log n is <i>smaller</i> than n^1.5, because log n grows slower than any power of n, even n^0.5.</p></div>
+
+<h2>Step 4: recurrences (recursive algorithms)</h2>
+<p>A recursive algorithm's cost is written as an equation about itself. For example, <b>binary search</b> checks the middle and then searches one half: <code>T(n) = T(n/2) + 1</code>. That halves n each time, so it takes log₂ n steps. <b>Merge sort</b> sorts two halves and then merges them in n steps: <code>T(n) = 2T(n/2) + n</code>, which gives <b>n log n</b>.</p>
+<div class="box"><p><b>Master theorem</b> for <code>T(n) = a·T(n/b) + nᵈ</code> (a pieces, each of size n/b, plus nᵈ work to combine). Compare d with log_b(a):</p>
+<p>• d &gt; log_b a → <b>nᵈ</b> (combining dominates)<br>• d = log_b a → <b>nᵈ log n</b> (balanced)<br>• d &lt; log_b a → <b>n^(log_b a)</b> (the pieces dominate)</p>
+<p>Merge sort: a = 2, b = 2, d = 1, log₂ 2 = 1, so d equals it → n¹ log n. Binary search: a = 1, b = 2, d = 0, log₂ 1 = 0, equal → n⁰ log n = log n.</p></div>
+
+<h2>Best, worst and average case</h2>
+<p>The same algorithm can be fast on lucky input and slow on unlucky input. <b>Worst case</b> is the guarantee. Example: quicksort is O(n log n) on average but O(n²) if the pivot is always the smallest or largest element (e.g. already sorted input and a bad pivot rule). <b>Space complexity</b> counts extra memory the same way.</p>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q24</div>
+<p class="q">The asymptotic complexity of four functions are f1(n) = 2ⁿ, f2(n) = n^(3/2), f3(n) = n log n, f4(n) = n^(log n). Arrange in increasing order of complexity.</p>
+<button class="opt">f2, f3, f4, f1</button><button class="opt">f1, f2, f3, f4</button><button class="opt">f3, f2, f4, f1</button><button class="opt">f3, f1, f2, f4</button>
+<div class="why" hidden><b>f3, f2, f4, f1.</b> n log n is below n^1.5 (a log is smaller than n^0.5). n^1.5 is polynomial, so it is below n^(log n). And n^(log n) is below 2ⁿ (compare the logs: (log n)² versus n).</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q45</div>
+<p class="q">The complexity of matrix multiplication of two matrices A and B whose orders are m × n and n × p respectively is</p>
+<button class="opt">O(m × p)</button><button class="opt">O(m × n² × p)</button><button class="opt">O(m × n × p²)</button><button class="opt">O(m × n × p)</button>
+<div class="why" hidden>m·p output cells, each needing n multiply-adds: <b>O(m·n·p)</b>. The first option only counts the cells, not the work inside each.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q46</div>
+<p class="q">From a character string of length m, the number of substrings of all lengths that can be formed is</p>
+<button class="opt">m²</button><button class="opt">m</button><button class="opt">m(m+1)/2</button><button class="opt">m log m</button>
+<div class="why" hidden>m + (m−1) + … + 1 = m(m+1)/2 (counting substrings by their start and end positions).</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">ISRO 2023 · Q47</div>
+<p class="q">A truth table will need how many rows if there are n variables?</p>
+<button class="opt">2·n</button><button class="opt">n</button><button class="opt">2ⁿ</button><button class="opt">None of the above</button>
+<div class="why" hidden>Each variable doubles the number of combinations: 2ⁿ.</div></div>
+
+<div class="foot">Primary source: CLRS, chapters 3 and 4. Anything unclear? Ask me, I'm your teacher here. <a href="0002-sorting.html">Next: Sorting →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>8 · Compiler Phases</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0007-grammars-and-language-classes.html">← Grammars</a><a href="0009-parsing.html">Next: Parsing →</a></nav>
+<h1>8 · How a Compiler Works</h1>
+<p class="sub"><span class="tag">Module B · Compilers</span><span class="tag">Asked in 2023 and 2025</span> The phases, what each one produces, and the tools around it.</p>
+
+<h2>Start here</h2>
+<p>A <b>compiler</b> translates a program written in a high-level language (C, Java) into something a machine can run. The computer cannot understand "position = initial + rate * 60" directly, so the compiler works in stages, each stage transforming the program into a form closer to machine code. Think of an assembly line: raw text goes in one end, machine code comes out the other.</p>
+<figure>
+<svg viewBox="0 0 700 150" width="700" role="img" aria-label="Compiler phases">
+<g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="4" y="30" width="100" height="50" rx="6"/><rect x="116" y="30" width="100" height="50" rx="6"/><rect x="228" y="30" width="100" height="50" rx="6"/><rect x="340" y="30" width="100" height="50" rx="6"/><rect x="452" y="30" width="100" height="50" rx="6"/><rect x="564" y="30" width="100" height="50" rx="6"/>
+<path d="M104 55h12M216 55h12M328 55h12M440 55h12M552 55h12"/></g>
+<g text-anchor="middle"><text x="54" y="52">Lexical</text><text x="54" y="68">analysis</text><text x="166" y="52">Syntax</text><text x="166" y="68">analysis</text><text x="278" y="52">Semantic</text><text x="278" y="68">analysis</text><text x="390" y="52">Intermediate</text><text x="390" y="68">code gen</text><text x="502" y="52">Code</text><text x="502" y="68">optimisation</text><text x="614" y="52">Target code</text><text x="614" y="68">generation</text>
+<text x="54" y="100">tokens</text><text x="166" y="100">parse tree</text><text x="278" y="100">checked tree</text><text x="390" y="100">3-address code</text><text x="502" y="100">better code</text><text x="614" y="100">machine code</text>
+<text x="350" y="140">Symbol table and error handler serve every phase</text></g></svg>
+<figcaption>Order to remember: lexical → syntax → semantic → intermediate code → optimisation → code generation.</figcaption></figure>
+
+<h2>Walking one statement through the pipeline</h2>
+<p>Source: <code>position = initial + rate * 60</code></p>
+<div class="ex"><div class="label">1. Lexical analysis (the scanner)</div>
+<p>Reads the raw characters and groups them into <b>tokens</b>, the "words" of the language. A <b>lexeme</b> is the actual text (<code>rate</code>); the <b>token</b> is its category (identifier). Result: <code>id1 = id2 + id3 * 60</code>. Whitespace and comments are discarded. The patterns for tokens are written as regular expressions and recognised by finite automata (lessons 6). It also enters names into the <b>symbol table</b>.</p></div>
+<div class="ex"><div class="label">2. Syntax analysis (the parser)</div>
+<p>Takes the stream of tokens and checks they follow the grammar, building a <b>parse tree</b> (or syntax tree) showing structure: here, * binds tighter than +, so rate*60 is a subtree. Errors like a missing bracket are caught here. The <b>parser receives the tokenised output</b> from the lexical analyser.</p></div>
+<div class="ex"><div class="label">3. Semantic analysis</div>
+<p>Checks meaning: are variables declared? Do the types match? Here, if id2 and id3 are floating-point and 60 is an integer, the compiler inserts a conversion: <code>inttofloat(60)</code>.</p></div>
+<div class="ex"><div class="label">4. Intermediate code generation</div>
+<p>Produces a simple machine-independent form, usually <b>three-address code</b> (each instruction has at most three operands):<br><code>t1 = inttofloat(60)</code><br><code>t2 = id3 * t1</code><br><code>t3 = id2 + t2</code><br><code>id1 = t3</code></p></div>
+<div class="ex"><div class="label">5. Code optimisation</div>
+<p>Rewrites the intermediate code to run faster or use less memory without changing what it does: <code>t1 = id3 * 60.0</code>, <code>id1 = id2 + t1</code>. Typical tricks: constant folding (compute 2*3 at compile time), common subexpression elimination, dead-code removal, moving unchanging code out of loops, replacing multiplication by shifts (strength reduction).</p></div>
+<div class="ex"><div class="label">6. Code generation</div>
+<p>Turns the optimised intermediate code into machine instructions for the target CPU, choosing registers.</p></div>
+<p>The first three phases (up to semantic analysis) are the <b>front end</b>, which depends on the source language. The last two or three are the <b>back end</b>, which depends on the target machine. This split is why one back end can serve several languages.</p>
+
+<h2>The whole toolchain</h2>
+<p class="chain"><span>Source</span> → <span>Preprocessor</span> → <span>Compiler</span> → <span>Assembly</span> → <span>Assembler</span> → <span>Object code</span> → <span>Linker</span> → <span>Loader</span> → <span>Running program</span></p>
+<ul><li><b>Preprocessor</b>: expands macros and #include.</li>
+<li><b>Assembler</b>: turns assembly into relocatable machine code (object file).</li>
+<li><b>Linker</b>: combines object files and libraries into one executable, resolving references between them.</li>
+<li><b>Loader</b>: places the executable into memory to run.</li></ul>
+<h3>Tools that generate compilers</h3>
+<ul><li><b>lex</b> (or flex): you give it regular expressions for tokens; it generates a <b>lexical analyser</b>.</li>
+<li><b>yacc</b> (or bison): you give it a grammar in BNF-like notation; it generates a <b>parser</b>.</li>
+<li><b>gdb</b> is a debugger; <b>ed</b> is a text editor: neither generates parsers.</li></ul>
+<h3>Interpreters and virtual machines</h3>
+<p>An <b>interpreter</b> runs code directly, line by line, without producing a separate machine-code file. Java does both: <code>javac</code> compiles source to <b>bytecode</b>, which is hardware independent; the <b>JVM</b> (Java Virtual Machine) then runs that bytecode on a specific machine. The bytecode is the input to the VM, not a part of the VM. The JVM itself is platform-specific, which is what lets the same bytecode run everywhere.</p>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q10</div>
+<p class="q">Which sequence below best describes the order in which the phases of a compiler typically work?</p>
+<button class="opt">Syntax analysis, lexical analysis, semantic analysis, code optimization, intermediate code generation</button>
+<button class="opt">Lexical analysis, syntax analysis, semantic analysis, code optimization, intermediate code generation</button>
+<button class="opt">Syntax analysis, lexical analysis, syntax analysis, semantic analysis, intermediate code generation, code optimization</button>
+<button class="opt">Lexical analysis, syntax analysis, semantic analysis, intermediate code generation, code optimization</button>
+<div class="why" hidden>Lexical → syntax → semantic → intermediate code generation → code optimisation. Optimisation works on the intermediate code, so it must come after that code exists.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q30</div>
+<p class="q">Which compiler phase receives tokenized output?</p>
+<button class="opt">Lexical Analyser</button><button class="opt">Parser</button><button class="opt">Pre-processor</button><button class="opt">Assembler</button>
+<div class="why" hidden>The lexical analyser produces tokens; the parser consumes them.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q31</div>
+<p class="q">Which one of the following tools generates a parser from BNF notation?</p>
+<button class="opt">lex</button><button class="opt">yacc</button><button class="opt">ed</button><button class="opt">gdb</button>
+<div class="why" hidden>yacc ("yet another compiler compiler") makes parsers; lex makes scanners.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q29</div>
+<p class="q">Which one of the following is true for a Virtual Machine like JVM?</p>
+<button class="opt">Hardware dependent</button><button class="opt">Hardware independent</button><button class="opt">Bytecode is part of VM</button><button class="opt">Links object code</button>
+<div class="why" hidden>The JVM gives programs a hardware-independent execution environment. Bytecode is what the VM runs, not part of the VM itself; linking is a separate toolchain job.</div></div>
+
+<div class="foot">Primary source: Aho, Lam, Sethi, Ullman (the "Dragon Book"), chapter 1. <a href="0009-parsing.html">Next: Parsing →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

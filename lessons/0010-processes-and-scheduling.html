@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>10 · Processes, Threads and Scheduling</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0009-parsing.html">← Parsing</a><a href="0011-synchronization-and-deadlock.html">Next: Synchronization and Deadlock →</a></nav>
+<h1>10 · Processes, Threads &amp; CPU Scheduling</h1>
+<p class="sub"><span class="tag">Module C · Operating systems</span><span class="tag">Asked in 2023 and 2025</span> What a process is, its states, threads, schedulers, and the scheduling formulas.</p>
+
+<h2>Start here: what does an operating system do?</h2>
+<p>The <b>operating system (OS)</b> sits between programs and hardware. It shares one CPU and one memory among many programs, protects them from each other, and gives them services (files, networking). The central idea: although there may be only one CPU, the OS switches between programs so quickly that they appear to run at the same time. This lesson is about how that switching is organised.</p>
+
+<h2>Process</h2>
+<div class="def"><p>A <b>program</b> is a file on disk. A <b>process</b> is a program <i>in execution</i>: its code, its current position (program counter), its data, its stack, and its allocated resources. The OS keeps a record for each process called the <b>PCB (process control block)</b>: process id, state, registers, memory info, open files.</p></div>
+<p>Processes are created with calls like <code>fork()</code>: the creating process is the <b>parent</b>; the new one is the <b>child</b>. After creation the parent may keep running <i>concurrently</i> with the child, or it may <code>wait()</code> until some or all of its children finish. (Both are possible.)</p>
+<h3>Process states</h3>
+<figure>
+<svg viewBox="0 0 640 220" width="640" role="img" aria-label="Process state diagram">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="10" y="80" width="80" height="40" rx="20"/><rect x="170" y="80" width="80" height="40" rx="20"/><rect x="350" y="80" width="80" height="40" rx="20"/><rect x="540" y="80" width="90" height="40" rx="20"/><rect x="260" y="170" width="80" height="40" rx="20"/>
+<path marker-end="url(#a)" d="M90 100h80"/><path marker-end="url(#a)" d="M250 90h100"/><path marker-end="url(#a)" d="M350 112q-50 12-100 0"/><path marker-end="url(#a)" d="M430 100h110"/><path marker-end="url(#a)" d="M380 120l-40 55"/><path marker-end="url(#a)" d="M270 175l-55-55"/></g>
+<g text-anchor="middle"><text x="50" y="105">New</text><text x="210" y="105">Ready</text><text x="390" y="105">Running</text><text x="585" y="105">Terminated</text><text x="300" y="195">Waiting</text>
+<text x="130" y="92">admit</text><text x="300" y="78">dispatch</text><text x="300" y="138">timeout / preempt</text><text x="485" y="92">exit</text><text x="395" y="158">I/O or event wait</text><text x="215" y="158">I/O done</text></g></svg>
+<figcaption>Ready = waiting for the CPU. Running = using the CPU. Waiting = waiting for I/O or an event. After I/O finishes a process goes back to <b>Ready</b>, never directly to Running.</figcaption></figure>
+<p>A <b>context switch</b> saves the state of the running process in its PCB and loads the state of the next one. It is pure overhead: no useful work happens during it.</p>
+
+<h2>Threads</h2>
+<p>A <b>thread</b> is a lightweight unit of execution <i>inside</i> a process. Threads of one process share its code, data and open files but each has its own program counter and stack. Creating and switching threads is cheaper than for processes. Two kinds: <b>user threads</b> (managed by a library) and <b>kernel threads</b> (managed by the OS). How they map:</p>
+<table><tr><th>Model</th><th>Meaning</th><th>Note</th></tr>
+<tr><td>Many-to-one</td><td>Many user threads → one kernel thread</td><td>One blocking call blocks all</td></tr>
+<tr><td><b>One-to-one</b></td><td>Each user thread → its own kernel thread</td><td><b>Linux and Windows</b></td></tr>
+<tr><td>Many-to-many</td><td>Many user threads → many kernel threads</td><td>Flexible, complex</td></tr></table>
+
+<h2>Interrupts, traps and system calls</h2>
+<ul><li>An <b>interrupt</b> is a signal that makes the CPU pause its current work and run a handler. <b>Hardware interrupts</b> come from devices (via the system bus); <b>software interrupts</b> are triggered by instructions such as system calls.</li>
+<li>A <b>trap</b> (exception) is a <i>software-generated</i> interrupt caused by the running program: a divide by zero, an illegal memory access, or a system call. So the statement "a trap is a hardware-generated interrupt" is false.</li>
+<li>If a process tries to access memory belonging to the OS or to another user's process, the hardware detects the violation and <b>traps to the OS</b>, which typically terminates the process.</li>
+<li>CPU modes: <b>user mode</b> for programs, <b>kernel mode</b> for the OS; a system call switches into kernel mode.</li></ul>
+
+<h2>The three schedulers</h2>
+<table><tr><th>Scheduler</th><th>Job</th><th>Runs</th></tr>
+<tr><td><b>Long-term</b> (job scheduler)</td><td>Chooses which jobs to load into memory; <b>controls the degree of multiprogramming</b></td><td>Rarely</td></tr>
+<tr><td><b>Medium-term</b></td><td>Swaps processes out of memory and back in (<b>swapping</b>)</td><td>Occasionally</td></tr>
+<tr><td><b>Short-term</b> (CPU scheduler)</td><td>Picks which ready process gets the CPU next</td><td>Very often, so it must be very fast</td></tr></table>
+
+<h2>CPU scheduling: algorithms and the formulas</h2>
+<p>For each process we know the <b>arrival time</b> (AT) and <b>burst time</b> (BT, the CPU time it needs). The measures:</p>
+<div class="box"><p><b>Completion time</b> (CT) = when it finishes<br><b>Turnaround time</b> (TAT) = CT − AT (total time in the system)<br><b>Waiting time</b> (WT) = TAT − BT (time spent in the ready queue)<br><b>Response time</b> = time of first CPU use − AT</p></div>
+<table><tr><th>Algorithm</th><th>Rule</th><th>Preemptive?</th><th>Weakness</th></tr>
+<tr><td><b>FCFS</b></td><td>First come, first served</td><td>No</td><td>Convoy effect: a long job delays all</td></tr>
+<tr><td><b>SJF</b></td><td>Shortest burst first</td><td>No</td><td>Starves long jobs; minimum average wait</td></tr>
+<tr><td><b>SRTF</b></td><td>Shortest <i>remaining</i> time first</td><td>Yes</td><td>Starvation</td></tr>
+<tr><td><b>Round robin</b></td><td>Each process gets a time quantum, then goes to the back</td><td>Yes</td><td>Too small a quantum = too many context switches; a huge one = FCFS</td></tr>
+<tr><td><b>Priority</b></td><td>Highest priority first</td><td>Either</td><td>Starvation, fixed by <b>aging</b> (slowly raise the priority of waiting processes)</td></tr></table>
+<div class="ex"><div class="label">Worked example: FCFS with an out-of-order list (2025 question)</div>
+<p>P1: AT 6, BT 24. P2: AT 0, BT 3. P3: AT 3, BT 3. <b>Always sort by arrival time first.</b></p>
+<ol class="steps"><li>Order by arrival: P2 (0), P3 (3), P1 (6).</li><li>Gantt chart: P2 runs 0–3, P3 runs 3–6, P1 runs 6–30.</li><li>Completion times: P2 = 3, P3 = 6, P1 = 30.</li><li>Turnaround = CT − AT: P2 = 3, P3 = 3, P1 = 24. Average = 30/3 = <b>10</b>.</li><li>Waiting = TAT − BT: 0, 0, 0. Average = <b>0</b>.</li></ol></div>
+<div class="ex"><div class="label">Worked example: FCFS vs SJF</div>
+<p>P1 (AT 0, BT 5), P2 (AT 1, BT 3), P3 (AT 2, BT 1).</p>
+<p><b>FCFS:</b> P1 0–5, P2 5–8, P3 8–9. Waiting: 0, 4, 6 → average 3.33.</p>
+<p><b>SJF (non-preemptive):</b> at time 0 only P1 is there, so it runs 0–5. Then the shortest is P3: 5–6, then P2: 6–9. Waiting: P1 0, P3 3, P2 5 → average 2.67. SJF gives the smaller average waiting time.</p></div>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="2"><div class="src">ISRO 2025 · Q67</div>
+<p class="q">For the processes P1 (arrival 6 ms, execution 24 ms), P2 (arrival 0, execution 3), P3 (arrival 3, execution 3), the average turnaround time and average waiting time using FCFS are:</p>
+<button class="opt">Turnaround 30 ms and waiting 4.5 ms</button><button class="opt">Turnaround 13 ms and waiting 3 ms</button><button class="opt">Turnaround 10 ms and waiting 0 ms</button><button class="opt">Turnaround 24 ms and waiting 0 ms</button>
+<div class="why" hidden>See the worked example: average turnaround 10 ms, average waiting 0 ms. The trap is to run them in the order listed (P1 first).</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q65</div>
+<p class="q">Which of the following transitions is not possible between the process states?</p>
+<button class="opt">Run → Ready</button><button class="opt">Run → Terminated</button><button class="opt">Run → Waiting</button><button class="opt">Waiting → Run</button>
+<div class="why" hidden>A waiting process whose event completes becomes Ready; the scheduler then dispatches it.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q64</div>
+<p class="q">Which statement is true when a parent process creates a new process?</p>
+<button class="opt">The parent continues to execute concurrently with its children</button><button class="opt">The parent waits until some or all of its children have terminated</button><button class="opt">The parent waits for the child by issuing a signal() system call</button><button class="opt">Both (a) and (b)</button>
+<div class="why" hidden>Both behaviours are allowed. The wait is done with wait(), not signal().</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q48</div>
+<p class="q">Which multithreading model is followed in Linux OS?</p>
+<button class="opt">One User Thread mapping to One Kernel Thread</button><button class="opt">Many User Threads mapping to One Kernel Thread</button><button class="opt">One User Thread mapping to Many Kernel Threads</button><button class="opt">Many User Threads mapping to Many Kernel Threads</button>
+<div class="why" hidden>One-to-one.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2023 · Q52</div>
+<p class="q">Match: (i) long term, (ii) medium term, (iii) short term scheduler with (P) executes much faster to reduce wastage of CPU time, (Q) controls degree of multiprogramming, (R) associated with swapping.</p>
+<button class="opt">(i)-R, (ii)-P, (iii)-Q</button><button class="opt">(i)-Q, (ii)-R, (iii)-P</button><button class="opt">(i)-P, (ii)-R, (iii)-Q</button><button class="opt">(i)-R, (ii)-Q, (iii)-P</button>
+<div class="why" hidden>Long-term → Q, medium-term → R, short-term → P.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q51</div>
+<p class="q">Which of the following is false about interrupts?</p>
+<button class="opt">Interrupts can be triggered by hardware or by software</button><button class="opt">Hardware interrupts may be triggered by sending a signal to CPU through a system bus</button><button class="opt">Software interrupts may be triggered by executing system calls</button><button class="opt">Trap is a hardware generated interrupt</button>
+<div class="why" hidden>A trap is a software-generated interrupt (an exception caused by the program).</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2023 · Q54</div>
+<p class="q">Any attempt by a process to access memory allocated to the OS or a process of another user results in</p>
+<button class="opt">Trap to OS</button><button class="opt">Context switching</button><button class="opt">Page fault</button><button class="opt">Invocation to scheduler dispatch</button>
+<div class="why" hidden>The hardware detects the illegal access and traps to the OS. A page fault means a legal page is simply not in memory.</div></div>
+
+<div class="foot">Primary source: Silberschatz, Galvin, Gagne, <i>Operating System Concepts</i>, chapters 3–5. <a href="0011-synchronization-and-deadlock.html">Next: Synchronization and Deadlock →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

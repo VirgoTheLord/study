@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>22 · Boolean Algebra and Logic Gates</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0021-transactions-indexes-nosql.html">← Transactions</a><a href="0023-combinational-circuits.html">Next: Combinational Circuits →</a></nav>
+<h1>22 · Boolean Algebra, Logic Gates &amp; K-Maps</h1>
+<p class="sub"><span class="tag">Module G · Digital logic</span><span class="tag">Asked in 2023 and 2025</span> The language of digital circuits and how to simplify it.</p>
+
+<h2>Start here</h2>
+<p>A computer's circuits work with two voltage levels, treated as <b>0</b> (false/low) and <b>1</b> (true/high). <b>Boolean algebra</b> is the maths of 0s and 1s. A <b>logic gate</b> is a tiny circuit that computes a Boolean function of its inputs.</p>
+
+<h2>The gates</h2>
+<table><tr><th>A B</th><th>AND (A·B)</th><th>OR (A+B)</th><th>NAND</th><th>NOR</th><th>XOR (A⊕B)</th><th>XNOR</th></tr>
+<tr><td>0 0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>1</td></tr><tr><td>0 1</td><td>0</td><td>1</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>1 0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>1</td><td>0</td></tr><tr><td>1 1</td><td>1</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td></tr></table>
+<ul><li><b>NOT</b> (A′ or Ā) flips the input. <b>AND</b>: 1 only if all inputs are 1. <b>OR</b>: 1 if any input is 1. <b>NAND</b> = NOT AND; <b>NOR</b> = NOT OR.</li>
+<li><b>XOR</b>: output 1 when the inputs are <b>different</b>. So it outputs 0 when both inputs are 1 <i>or</i> both are 0. <b>XNOR</b>: 1 when the inputs are the same.</li>
+<li>NAND and NOR are <b>universal gates</b>: any circuit can be built from just one of them. If you tie both inputs of a NAND (or NOR) together, A·A = A, so the output is NOT A: a <b>NOT gate</b>.</li></ul>
+<div class="ex"><div class="label">Worked example: both inputs tied together</div>
+<p>NAND with inputs A and A: output = (A·A)′ = A′. NOR with inputs A and A: (A+A)′ = A′. Both give a NOT gate.</p></div>
+
+<h2>Rules of Boolean algebra</h2>
+<table><tr><th>Law</th><th>Form</th></tr>
+<tr><td>Identity</td><td>A + 0 = A &nbsp; A · 1 = A</td></tr><tr><td>Null</td><td>A + 1 = 1 &nbsp; A · 0 = 0</td></tr>
+<tr><td>Idempotent</td><td>A + A = A &nbsp; A · A = A</td></tr><tr><td>Complement</td><td>A + A′ = 1 &nbsp; A · A′ = 0</td></tr>
+<tr><td>Double negation</td><td>(A′)′ = A</td></tr><tr><td>Distributive</td><td>A(B + C) = AB + AC &nbsp; A + BC = (A + B)(A + C)</td></tr>
+<tr><td>Absorption</td><td>A + AB = A &nbsp; A(A + B) = A</td></tr>
+<tr><td><b>De Morgan</b></td><td>(A·B)′ = A′ + B′ &nbsp; (A + B)′ = A′·B′</td></tr></table>
+<p>A truth table for n input variables has <b>2ⁿ rows</b>.</p>
+
+<h2>Forms of a function</h2>
+<ul><li>A <b>minterm</b> is an AND of all variables (each plain or complemented) that is 1 for exactly one input row. A <b>sum of products (SOP)</b> ORs the minterms where the function is 1. Example: X′Y′Z′ + X′YZ′.</li>
+<li>A <b>maxterm</b> is an OR of all variables that is 0 for exactly one row; a <b>product of sums (POS)</b> ANDs the maxterms where the function is 0.</li></ul>
+
+<h2>Simplifying with a Karnaugh map (K-map)</h2>
+<p>A K-map is the truth table redrawn as a grid so that neighbouring cells differ in exactly one variable. This makes simplification a visual job. For 3 variables the grid has 8 cells (2 × 4). The key trick: label the rows/columns in <b>Gray code</b> (00, 01, 11, 10), not in binary order, so that adjacent cells differ by one bit.</p>
+<ol class="steps"><li>Mark a 1 in every cell where the function is 1.</li><li>Circle groups of 1s. Group sizes must be powers of 2 (1, 2, 4, 8). Groups may wrap around the edges.</li><li>Make groups as big as possible, and cover every 1 at least once.</li><li>Each group becomes one product term: keep the variables that do not change across the group, drop those that do.</li><li>OR the terms together.</li></ol>
+<div class="ex"><div class="label">Worked example (2025 question): X′Y′Z′ + X′YZ′</div>
+<p>Both terms contain X′ and Z′. The only variable that differs is Y (once Y′, once Y). By the rule A·Y′ + A·Y = A, we get <b>X′Z′</b>.</p>
+<p>On the map with rows labelled X′Y′, X′Y, XY, XY′ and columns Z′, Z, the 1s sit in the <b>Z′ column</b> in the rows X′Y′ and X′Y. These two adjacent cells form a group of 2, which simplifies to X′Z′. So the correct K-map is the one with 1s in the (X′Y′, Z′) and (X′Y, Z′) cells and 0 elsewhere.</p></div>
+<table><tr><th></th><th>Z′</th><th>Z</th></tr><tr><th>X′Y′</th><td><b>1</b></td><td>0</td></tr><tr><th>X′Y</th><td><b>1</b></td><td>0</td></tr><tr><th>XY</th><td>0</td><td>0</td></tr><tr><th>XY′</th><td>0</td><td>0</td></tr></table>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q39</div>
+<p class="q">A logic circuit that provides a LOW output when both inputs are HIGH or both inputs are LOW is</p>
+<button class="opt">AND</button><button class="opt">NAND</button><button class="opt">XNOR</button><button class="opt">XOR</button>
+<div class="why" hidden>Equal inputs → 0, different inputs → 1: that is XOR. XNOR does the reverse.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2023 · Q40</div>
+<p class="q">The resulting logic circuit obtained when both inputs of NOR and NAND gates are connected together is</p>
+<button class="opt">AND</button><button class="opt">XOR</button><button class="opt">OR</button><button class="opt">NOT</button>
+<div class="why" hidden>Tying inputs together gives A′ from either gate: a NOT gate.</div></div>
+
+<div class="pyq" data-answer="0"><div class="src">ISRO 2025 · Q52</div>
+<p class="q">The Boolean expression is X′Y′Z′ + X′YZ′. Which K-map represents it? (Rows X′Y′, X′Y, XY, XY′; columns Z′, Z.)</p>
+<button class="opt">1s at (X′Y′, Z′) and (X′Y, Z′); all other cells 0</button><button class="opt">1s at (X′Y′, Z) and (X′Y, Z); all other cells 0</button><button class="opt">1s at (XY, Z′) and (XY′, Z′); all other cells 0</button><button class="opt">A single 1 at (X′Y′, Z′); all other cells 0</button>
+<div class="why" hidden>Both terms contain Z′ and X′, so the 1s are in the Z′ column, in the two rows that start with X′ (X′Y′ and X′Y). Option 4 would be only one of the two terms.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">Practice (written by me)</div>
+<p class="q">Simplify A·B + A·B′.</p>
+<button class="opt">B</button><button class="opt">A + B</button><button class="opt">A</button><button class="opt">1</button>
+<div class="why" hidden>A·B + A·B′ = A(B + B′) = A · 1 = A.</div></div>
+
+<div class="foot">Primary source: Morris Mano, <i>Digital Design</i>, chapters 2–3. <a href="0023-combinational-circuits.html">Next: Combinational Circuits →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>5 · Graph Algorithms and Greedy Methods</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0004-graph-basics.html">← Graph Basics</a><a href="0006-finite-automata-and-regex.html">Next: Finite Automata →</a></nav>
+<h1>5 · Graph Algorithms &amp; Greedy Methods</h1>
+<p class="sub"><span class="tag">Module A · Algorithms</span><span class="tag">Asked in 2023 and 2025</span> BFS/DFS, spanning trees, shortest paths, Huffman, greedy vs dynamic programming.</p>
+
+<h2>Start here: the four jobs graph algorithms do</h2>
+<table><tr><th>Job</th><th>Plain English</th><th>Algorithm</th></tr>
+<tr><td>Explore</td><td>Visit everything reachable</td><td>BFS, DFS</td></tr>
+<tr><td>Connect cheaply</td><td>Link all places with the least total cable</td><td>Kruskal, Prim (minimum spanning tree)</td></tr>
+<tr><td>Shortest route from one place</td><td>Fastest way from A to everywhere</td><td>Dijkstra, Bellman–Ford</td></tr>
+<tr><td>Shortest route between all pairs</td><td>A table of fastest routes for every pair</td><td>Floyd–Warshall</td></tr></table>
+
+<h2>1. Exploring: BFS and DFS</h2>
+<ul><li><b>BFS (breadth-first)</b>: visit the start, then all its neighbours, then all of their neighbours, level by level. Uses a <b>queue</b>. It finds the path with the fewest edges.</li>
+<li><b>DFS (depth-first)</b>: go as deep as possible along one path, then backtrack. Uses a <b>stack</b> (or recursion).</li>
+<li>Both cost O(V + E) with adjacency lists.</li></ul>
+
+<h2>2. Minimum spanning tree (MST)</h2>
+<div class="def"><p>A <b>spanning tree</b> connects all V vertices using exactly V − 1 edges and no cycle. The <b>minimum spanning tree</b> is the one with the smallest total edge weight.</p></div>
+<h3>Kruskal's algorithm: pick the cheapest edge that doesn't make a cycle</h3>
+<ol class="steps"><li>Sort all edges by weight.</li><li>Take the next cheapest edge; if it joins two different components, keep it; otherwise (it would form a cycle) skip it.</li><li>Stop when you have V − 1 edges.</li></ol>
+<div class="ex"><div class="label">Worked example</div>
+<p>Vertices A, B, C, D. Edges: A–B 1, B–C 2, A–C 3, C–D 4, B–D 5. Sorted: 1 (A–B) keep; 2 (B–C) keep; 3 (A–C) would close the cycle A–B–C, skip; 4 (C–D) keep. We now have 3 edges for 4 vertices: done. Total weight = 1 + 2 + 4 = <b>7</b>, number of edges = <b>3</b>.</p></div>
+<h3>Prim's algorithm: grow one tree</h3>
+<p>Start from any vertex. Repeatedly add the cheapest edge that connects the current tree to a new vertex. Same answer weight as Kruskal.</p>
+<p>Cost: Kruskal O(E log E); Prim O(E log V) with a heap.</p>
+
+<h2>3. Shortest paths from one source</h2>
+<h3>Dijkstra: always finalise the closest unvisited vertex</h3>
+<ol class="steps"><li>Set distance of the start to 0 and all others to ∞.</li><li>Pick the unvisited vertex with the smallest distance; mark it final.</li><li>For each neighbour, see if going through this vertex gives a shorter distance, and update.</li><li>Repeat until all are final.</li></ol>
+<div class="ex"><div class="label">Worked example</div>
+<p>Edges: S–A 4, S–B 1, B–A 2, A–T 1, B–T 5. Start S. Distances: S=0, A=4, B=1, T=∞. Pick B (1): A becomes min(4, 1+2) = 3, T = 1+5 = 6. Pick A (3): T = min(6, 3+1) = 4. Pick T. Shortest S→T = <b>4</b> via S–B–A–T.</p></div>
+<div class="box trap"><p><b>Dijkstra fails with negative edge weights</b> because it assumes a finalised vertex can never be improved. Use Bellman–Ford instead.</p></div>
+<h3>Bellman–Ford: relax every edge V − 1 times</h3>
+<p>Handles negative edges and can detect a negative-weight cycle (if an edge can still be relaxed on the V-th pass). Cost O(V·E).</p>
+
+<h2>4. All-pairs shortest paths: Floyd–Warshall</h2>
+<p>Keep a table dist[i][j]. For each possible intermediate vertex k, check whether going i → k → j is shorter than the current i → j. Three nested loops: <b>O(V³)</b>. It is an example of <b>dynamic programming</b>. Use it when the question says "shortest paths between all pairs".</p>
+
+<h2>5. Greedy method and Huffman coding</h2>
+<div class="def"><p><b>Greedy algorithm:</b> at each step make the choice that looks best right now (a local optimum), and never reconsider. It does not try all possibilities. It works only when the problem has a structure that makes local choices safe. Kruskal, Prim, Dijkstra, Huffman and fractional knapsack are greedy.</p></div>
+<p><b>Huffman coding</b> compresses data by giving shorter bit codes to more frequent symbols. It works on the <b>frequencies of the input symbols</b>: repeatedly merge the two least frequent items into one node whose frequency is their sum, until one tree remains. Left edge = 0, right edge = 1.</p>
+<div class="ex"><div class="label">Worked example</div>
+<p>Frequencies: A 5, B 9, C 12, D 13. Merge A and B (5+9) → node 14. Now the smallest two are C 12 and D 13 → node 25. Merge 14 and 25 → 39. Codes: C = 00, D = 01, A = 100, B = 101. The most frequent symbols (C, D) get the shortest codes.</p></div>
+<h3>Greedy vs dynamic programming</h3>
+<p><b>Greedy</b>: one choice per step, no looking back. <b>Dynamic programming</b>: solve small subproblems, store the answers, and combine them (Floyd–Warshall, 0/1 knapsack, multistage graph). Use DP when the greedy choice can be wrong.</p>
+<p>The <b>multistage graph</b> problem asks for the cheapest path through a graph arranged in stages (source → stage 1 → … → destination) and is solved by DP.</p>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="1"><div class="src">ISRO 2023 · Q2</div>
+<p class="q">Match: (A) Floyd Warshall (B) Dijkstra (C) Kruskal's (D) Bellman Ford with (i) shortest path between two vertices, (ii) single source shortest path, (iii) minimum spanning tree, (iv) solving all-pair shortest path. Which option gives the correct set of pairs?</p>
+<button class="opt">A–iii, B–ii, C–iv, D–i</button><button class="opt">A–iv, B–i, C–iii, D–ii</button><button class="opt">A–i, B–ii, C–iii, D–iv</button><button class="opt">A–ii, B–iii, C–i, D–iv</button>
+<div class="why" hidden>Two matches are certain: Floyd–Warshall = all-pairs (iv) and Kruskal = MST (iii). Only the second option contains both of them, so it is the answer. Its pairing of Dijkstra with (i) and Bellman–Ford with (ii) is just how the question was written; both really solve the single-source problem.</div></div>
+
+<div class="pyq" data-answer="3"><div class="src">ISRO 2025 · Q2</div>
+<p class="q">Huffman coding algorithm works on the principle of</p>
+<button class="opt">Randomization of symbols</button><button class="opt">Key based partitioning of symbols</button><button class="opt">Hashing of symbols</button><button class="opt">Frequencies of input symbols</button>
+<div class="why" hidden>It builds the code tree by repeatedly merging the least frequent symbols.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2025 · Q4</div>
+<p class="q">Which of the following is true about the Greedy algorithm?</p>
+<button class="opt">Does not make any optimization</button><button class="opt">Makes local optimal decisions based on the selected criterion</button><button class="opt">Requires exhaustive search of all possible solutions</button><button class="opt">Is obvious in its correctness</button>
+<div class="why" hidden>Greedy = locally best choice each step. It does not search exhaustively, and its correctness usually needs a proof.</div></div>
+
+<div class="pyq" data-answer="2"><div class="src">Practice (ISRO 2023 Q1 style, written by me)</div>
+<p class="q">A graph has edges A–B 1, B–C 2, A–C 3, C–D 4, B–D 5. The minimum spanning distance and the number of edges in the MST are</p>
+<button class="opt">6 and 3</button><button class="opt">8 and 3</button><button class="opt">7 and 3</button><button class="opt">7 and 4</button>
+<div class="why" hidden>Kruskal: keep 1, 2, skip 3 (cycle), keep 4. Total 7, edges 3 (always V − 1).</div></div>
+
+<div class="foot">Primary source: CLRS, chapters 16, 22, 23, 24, 25. <a href="0006-finite-automata-and-regex.html">Next: Finite Automata →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>

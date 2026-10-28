@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>26 · Computer Organization</title><link rel="stylesheet" href="../assets/style.css"></head><body><main>
+<nav class="nav"><a href="0025-number-systems.html">← Number Systems</a><a href="0027-linear-algebra-and-calculus.html">Next: Linear Algebra and Calculus →</a></nav>
+<h1>26 · Computer Organization: CPU, Pipelining, Interrupts, Cache</h1>
+<p class="sub"><span class="tag">Module G · Computer architecture</span><span class="tag">Asked in 2023</span> How a processor executes instructions and how it is made fast.</p>
+
+<h2>Start here: the parts of a computer</h2>
+<p>A computer has a <b>CPU</b> (the processor), <b>memory</b> and <b>input/output</b> devices, joined by <b>buses</b> (shared wires for addresses, data and control). The CPU has an <b>ALU</b> (arithmetic and logic unit that computes), a <b>control unit</b> (directs everything), and <b>registers</b> (tiny, very fast storage), such as the <b>program counter (PC)</b> holding the address of the next instruction, the <b>instruction register (IR)</b>, and the accumulator.</p>
+<h2>The instruction cycle</h2>
+<p>The CPU repeats forever: <b>Fetch</b> the instruction from memory at the address in PC (and increment PC) → <b>Decode</b> it to see what it means → <b>Execute</b> it (compute, read/write memory) → store the result. The elementary operations performed on data held in registers (like "copy R1 into R2", "add R1 and R2") are called <b>micro-operations</b>; each instruction is built from a sequence of them.</p>
+<p><b>Instruction set architecture (ISA)</b> is the contract between software and hardware: the instructions, registers and addressing modes the programmer sees. <b>Addressing modes</b> say how an operand is found: immediate (value in the instruction), direct (address in the instruction), indirect (address of the address), register, indexed.</p>
+
+<h2>Pipelining</h2>
+<p>Without pipelining, the CPU finishes one instruction completely before starting the next, like a laundry where you wash, dry and fold one load at a time. <b>Pipelining</b> overlaps the stages: while one instruction is being executed, the next is being decoded and the one after is being fetched, just as you can put load 2 in the washer while load 1 is in the dryer.</p>
+<figure><svg viewBox="0 0 520 130" width="520" role="img" aria-label="Pipeline timing diagram">
+<g fill="none" stroke="currentColor" stroke-width="1.2"><rect x="60" y="20" width="60" height="24"/><rect x="120" y="20" width="60" height="24"/><rect x="180" y="20" width="60" height="24"/><rect x="120" y="50" width="60" height="24"/><rect x="180" y="50" width="60" height="24"/><rect x="240" y="50" width="60" height="24"/><rect x="180" y="80" width="60" height="24"/><rect x="240" y="80" width="60" height="24"/><rect x="300" y="80" width="60" height="24"/></g>
+<g text-anchor="middle"><text x="30" y="36">I1</text><text x="30" y="66">I2</text><text x="30" y="96">I3</text><text x="90" y="36">F</text><text x="150" y="36">D</text><text x="210" y="36">E</text><text x="150" y="66">F</text><text x="210" y="66">D</text><text x="270" y="66">E</text><text x="210" y="96">F</text><text x="270" y="96">D</text><text x="330" y="96">E</text><text x="260" y="124">time →   (F fetch, D decode, E execute)</text></g></svg></figure>
+<ul><li>With k stages and a long run of instructions, the ideal speed-up approaches <b>k</b>. To run n instructions: time ≈ (k + n − 1) cycles instead of n × k.</li>
+<li>An instruction pipeline can be implemented with <b>FIFO buffers</b> between stages (first in, first out keeps the instructions in order); a stack (LIFO) would reverse the order.</li>
+<li><b>Hazards</b> stop the ideal flow: <b>structural</b> (two stages need the same hardware), <b>data</b> (an instruction needs a result not yet computed), <b>control</b> (a branch changes what comes next).</li></ul>
+<h3>Faster still: superscalar</h3>
+<p>A <b>superscalar</b> processor has several execution units and can issue and finish <b>more than one instruction per clock cycle</b>. For a given number of instructions it gives the fastest execution among the choices in the exam (ISA is just the interface, not a speed technique; "ANSA" is not a processor architecture type).</p>
+
+<h2>Interrupts</h2>
+<p>An <b>interrupt</b> lets a device (keyboard, disk) get the CPU's attention. The CPU finishes its current instruction, saves its state, runs a short <b>interrupt service routine</b>, and then resumes. How does the CPU find the right routine?</p>
+<ul><li><b>Non-vectored</b>: all interrupts go to one fixed address and software works out the source.</li>
+<li><b>Vectored interrupt</b>: the <b>interrupting device itself supplies</b> the address (or an index into a table of addresses, the interrupt vector) of its service routine, so the CPU jumps straight to the right place.</li></ul>
+<p><b>DMA (direct memory access)</b> lets an I/O device transfer blocks of data to or from memory without involving the CPU in each byte.</p>
+
+<h2>Memory hierarchy and cache</h2>
+<p>Fast memory is small and expensive; big memory is slow. So computers stack them: registers → cache → main memory → disk. A <b>cache</b> keeps copies of recently used data close to the CPU. A <b>hit</b> means the data was in the cache; a <b>miss</b> means it had to come from memory. This works because of <b>locality</b>: programs reuse recent data (temporal locality) and touch nearby addresses (spatial locality).</p>
+<div class="box"><p><b>Average memory access time</b> = h × t_cache + (1 − h) × t_memory, where h is the hit ratio. Example: h = 0.9, cache 5 ns, memory 100 ns: 0.9 × 5 + 0.1 × 100 = 14.5 ns.</p></div>
+<p>Cache mapping: <b>direct-mapped</b> (each block has exactly one cache line; simple, more conflicts), <b>fully associative</b> (any block anywhere; flexible, costly), <b>set-associative</b> (a compromise).</p>
+
+<h2>Check yourself</h2>
+<div class="pyq" data-answer="1"><div class="src">ISRO 2023 · Q18</div>
+<p class="q">In a vectored interrupt</p>
+<button class="opt">The branch address is assigned to a fixed location in memory</button><button class="opt">The interrupting source supplies the branch information to the processor</button><button class="opt">The branch address is obtained from a register in the processor</button><button class="opt">None of the above</button>
+<div class="why" hidden>In a vectored interrupt the device provides the vector (address or index) of its service routine.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2023 · Q19</div>
+<p class="q">For a given finite number of instructions to be executed, which architecture of the processor provides fastest execution?</p>
+<button class="opt">ANSA – Advanced Network Systems Architecture</button><button class="opt">Super-scalar</button><button class="opt">ISA – Instruction Set Architecture</button><button class="opt">All of the above</button>
+<div class="why" hidden>Superscalar issues several instructions per cycle.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2023 · Q20</div>
+<p class="q">An instruction pipeline can be implemented by means of</p>
+<button class="opt">LIFO buffer</button><button class="opt">FIFO buffer</button><button class="opt">Stack</button><button class="opt">None of the above</button>
+<div class="why" hidden>FIFO buffers keep instructions in order as they move between stages.</div></div>
+
+<div class="pyq" data-answer="1"><div class="src">ISRO 2023 · Q21</div>
+<p class="q">The operation executed on data stored in registers is called</p>
+<button class="opt">Macro-operation</button><button class="opt">Micro-operation</button><button class="opt">Bit-operation</button><button class="opt">Byte-operation</button>
+<div class="why" hidden>Micro-operations are the elementary register-level operations.</div></div>
+
+<div class="foot">Primary source: Hamacher, Vranesic, Zaky, <i>Computer Organization</i>; Patterson &amp; Hennessy for pipelining. <a href="0027-linear-algebra-and-calculus.html">Next: Linear Algebra and Calculus →</a></div>
+</main><script src="../assets/quiz.js"></script></body></html>
